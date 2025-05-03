@@ -5,6 +5,7 @@
 #include  "ofxAssimpModelLoader.h"
 #include "Octree.h"
 #include <glm/gtx/intersect.hpp>
+#include "lander.h"
 
 
 
@@ -50,6 +51,8 @@ class ofApp : public ofBaseApp{
 		glm::vec3 mouseDownPos, mouseLastPos;
 		bool bInDrag = false;
 
+		Lander ship;
+
 
 		ofxIntSlider numLevels;
 		ofxPanel gui;
@@ -78,5 +81,6 @@ class ofApp : public ofBaseApp{
 
 		const float selectionRange = 4.0;
 
+		map<int, bool> keymap;
 
 };

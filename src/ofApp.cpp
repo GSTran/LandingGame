@@ -40,8 +40,6 @@ void ofApp::setup(){
 	cout << "Moon Test Data: " << endl;
 	mars.loadModel("geo/moon-houdini.obj");
 
-	// cout << "Mars Test Data: " << endl;
-	// mars.loadModel("geo/mars-low-5x-v2.obj");
 	mars.setScaleNormalization(false);
 
 	// create sliders for testing
@@ -63,6 +61,7 @@ void ofApp::setup(){
 
 	testBox = Box(Vector3(3, 3, 0), Vector3(5, 5, 2));
 
+	ship.loadModel();
 
 }
  
@@ -84,6 +83,15 @@ void ofApp::update() {
 		if (colBoxList.size() <= 10)
 			collisionResolution = false;
 	}	
+
+	if (keymap['w'] || keymap['W']) ship.forces += 1 * ship.heading();
+	if (keymap[OF_KEY_DOWN]) ship.rotForce += glm::vec3(10, 0.0, 0.0);
+	if (keymap[OF_KEY_UP]) ship.rotForce += glm::vec3(-10, 0.0, 0.0);
+	if (keymap[OF_KEY_RIGHT]) ship.rotForce += glm::vec3(0.0, 10, 0.0);
+	if (keymap[OF_KEY_LEFT]) ship.rotForce += glm::vec3(-0.0, -10, 0.0);
+
+
+	ship.integrate();
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -110,6 +118,16 @@ void ofApp::draw() {
 		ofEnableLighting();              // shaded mode
 		mars.drawFaces();
 		ofMesh mesh;
+
+		// Game ship draw code starts here
+		ship.draw();
+
+
+		// Game ship draw code ends here
+
+
+
+
 		if (bLanderLoaded) {
 			lander.drawFaces();
 			if (!bTerrainSelected) drawAxis(lander.getPosition());
@@ -259,7 +277,7 @@ void ofApp::keyPressed(int key) {
 		break;
 	case 'V':
 		break;
-	case 'w':
+	case 'g':
 		toggleWireframeMode();
 		break;
 	case OF_KEY_ALT:
@@ -280,6 +298,8 @@ void ofApp::keyPressed(int key) {
 	default:
 		break;
 	}
+	keymap[key] = true;
+
 }
 
 void ofApp::toggleWireframeMode() {
@@ -297,7 +317,6 @@ void ofApp::togglePointsDisplay() {
 void ofApp::keyReleased(int key) {
 
 	switch (key) {
-	
 	case OF_KEY_ALT:
 		cam.disableMouseInput();
 		bAltKeyDown = false;
@@ -309,8 +328,8 @@ void ofApp::keyReleased(int key) {
 		break;
 	default:
 		break;
-
 	}
+	keymap[key] = false;
 }
 
 
@@ -410,15 +429,6 @@ void ofApp::mouseDragged(int x, int y, int button) {
 
 		colBoxList.clear();
 		octree.intersect(bounds, octree.root, colBoxList);
-	
-
-		/*if (bounds.overlap(testBox)) {
-			cout << "overlap" << endl;
-		}
-		else {
-			cout << "OK" << endl;
-		}*/
-
 
 	}
 	else {
@@ -596,8 +606,6 @@ void ofApp::dragEvent(ofDragInfo dragInfo) {
 			landerBounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
 		}
 	}
-
-
 }
 
 //  intersect the mouse ray with the plane normal to the camera 
