@@ -84,14 +84,27 @@ void ofApp::update() {
 			collisionResolution = false;
 	}	
 
-	if (keymap['w'] || keymap['W']) ship.forces += 1 * ship.heading();
-	if (keymap[OF_KEY_DOWN]) ship.rotForce += glm::vec3(10, 0.0, 0.0);
-	if (keymap[OF_KEY_UP]) ship.rotForce += glm::vec3(-10, 0.0, 0.0);
-	if (keymap[OF_KEY_RIGHT]) ship.rotForce += glm::vec3(0.0, 10, 0.0);
-	if (keymap[OF_KEY_LEFT]) ship.rotForce += glm::vec3(-0.0, -10, 0.0);
+	if (keymap[OF_KEY_UP]) ship.forces += 2 * ship.headingY();
+	if (keymap['d'] || keymap['D']) ship.forces += -10 * ship.headingX();
+	if (keymap['a'] || keymap['A']) ship.forces += 10 * ship.headingX();
+	if (keymap['w'] || keymap['W']) ship.forces += 10 * ship.headingZ();
+	if (keymap['s'] || keymap['S']) ship.forces += -10 * ship.headingZ();	
+	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
+	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
+
+	if (colBoxList.size() < 10) {
+		ship.forces += glm::vec3(0.0, -0.8, 0.0); // Gravity Force
+	} else if (!keymap[OF_KEY_UP]){
+		if (ship.velocity.length() > 5.0f) cout << "CRASH" << endl;
+		ship.landedLogic();
+	}
+
+	colBoxList.clear();
+	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 
 	ship.integrate();
+	cout << ship.calculateAltitude(octree) << endl;
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -122,6 +135,12 @@ void ofApp::draw() {
 		// Game ship draw code starts here
 		ship.draw();
 
+		// draw colliding boxes
+		//
+		ofSetColor(ofColor::lightGreen);
+		for (int i = 0; i < colBoxList.size(); i++) {
+			Octree::drawBox(colBoxList[i]);
+		}
 
 		// Game ship draw code ends here
 
@@ -142,7 +161,6 @@ void ofApp::draw() {
 					ofPopMatrix();
 				}
 			}
-
 			if (bLanderSelected) {
 
 				ofVec3f min = lander.getSceneMin() + lander.getPosition();
@@ -237,66 +255,66 @@ void ofApp::drawAxis(ofVec3f location) {
 void ofApp::keyPressed(int key) {
 
 	switch (key) {
-	case 'B':
-	case 'b':
-		bDisplayBBoxes = !bDisplayBBoxes;
-		break;
+	// case 'B':
+	// case 'b':
+	// 	bDisplayBBoxes = !bDisplayBBoxes;
+	// 	break;
 	case 'C':
 	case 'c':
 		if (cam.getMouseInputEnabled()) cam.disableMouseInput();
 		else cam.enableMouseInput();
 		break;
-	case 'F':
-	case 'f':
-		ofToggleFullscreen();
-		break;
-	case 'H':
-	case 'h':
-		break;
-	case 'L':
-	case 'l':
-		bDisplayLeafNodes = !bDisplayLeafNodes;
-		break;
+	// case 'F':
+	// case 'f':
+	// 	ofToggleFullscreen();
+	// 	break;
+	// case 'H':
+	// case 'h':
+	// 	break;
+	// case 'L':
+	// case 'l':
+	// 	bDisplayLeafNodes = !bDisplayLeafNodes;
+	// 	break;
 	case 'O':
 	case 'o':
 		bDisplayOctree = !bDisplayOctree;
 		break;
-	case 'r':
-		cam.reset();
-		break;
-	case 's':
-		savePicture();
-		break;
-	case 't':
-		setCameraTarget();
-		break;
-	case 'u':
-		break;
-	case 'v':
-		togglePointsDisplay();
-		break;
-	case 'V':
-		break;
-	case 'g':
-		toggleWireframeMode();
-		break;
-	case OF_KEY_ALT:
-		cam.enableMouseInput();
-		bAltKeyDown = true;
-		break;
-	case OF_KEY_CONTROL:
-		bCtrlKeyDown = true;
-		break;
-	case OF_KEY_SHIFT:
-		break;
-	case OF_KEY_DEL:
-		break;
-	case 'P':
-	case 'p':
-		if (colBoxList.size() > 10) collisionResolution = true;
-		break;
-	default:
-		break;
+	// case 'r':
+	// 	cam.reset();
+	// 	break;
+	// case 's':
+	// 	savePicture();
+	// 	break;
+	// case 't':
+	// 	setCameraTarget();
+	// 	break;
+	// case 'u':
+	// 	break;
+	// case 'v':
+	// 	togglePointsDisplay();
+	// 	break;
+	// case 'V':
+	// 	break;
+	// case 'g':
+	// 	toggleWireframeMode();
+	// 	break;
+	// case OF_KEY_ALT:
+	// 	cam.enableMouseInput();
+	// 	bAltKeyDown = true;
+	// 	break;
+	// case OF_KEY_CONTROL:
+	// 	bCtrlKeyDown = true;
+	// 	break;
+	// case OF_KEY_SHIFT:
+	// 	break;
+	// case OF_KEY_DEL:
+	// 	break;
+	// case 'P':
+	// case 'p':
+	// 	if (colBoxList.size() > 10) collisionResolution = true;
+	// 	break;
+	// default:
+	// 	break;
 	}
 	keymap[key] = true;
 

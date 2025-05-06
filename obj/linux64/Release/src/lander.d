@@ -324,7 +324,11 @@ obj/linux64/Release/src/lander.o: \
  /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpModelLoader.h \
  /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpMeshHelper.h \
  /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpTexture.h \
- /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpAnimation.h
+ /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpAnimation.h \
+ /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/box.h \
+ /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/vector3.h \
+ /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/ray.h \
+ /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/Octree.h
 /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/lander.h:
 ../../../libs/openFrameworks/ofMain.h:
 ../../../libs/openFrameworks/utils/ofConstants.h:
@@ -651,3 +655,7 @@ obj/linux64/Release/src/lander.o: \
 /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpMeshHelper.h:
 /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpTexture.h:
 /home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/addons/ofxAssimpModelLoader/src/ofxAssimpAnimation.h:
+/home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/box.h:
+/home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/vector3.h:
+/home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/ray.h:
+/home/gyostrand/Downloads/of_v0.12.0_linux64gcc6_release/apps/myApps/LandingGame/src/Octree.h:

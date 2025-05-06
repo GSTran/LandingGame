@@ -2,6 +2,9 @@
 
 #include "ofMain.h"
 #include  "ofxAssimpModelLoader.h"
+#include "box.h"
+#include "Octree.h"
+#include "ray.h"
 
 // Basic Shape class supporting matrix transformations and drawing.
 // 
@@ -15,8 +18,8 @@ public:
 		radius = 25;
 		damping = 0.995;
 		mass = 1;
-		rotSpeed = glm::vec3(0.0);
-		rotAccel = glm::vec3(0.0);
+		rotSpeed = 0.0;
+		rotAccel = 0.0;
   }
 
 	virtual void draw() {
@@ -26,31 +29,39 @@ public:
 		ofPushMatrix();
 		ofMultMatrix(getTransform());
     model.drawFaces();
+		ofDrawLine(pos, glm::vec3(pos.x, pos.y - 10, pos.z));
+		ofDrawSphere(2);
 		ofPopMatrix();
+		Octree::drawBox(getTransformBounds());
 	}
 
 	glm::mat4 getTransform() {
 		glm::mat4 T = glm::translate(glm::mat4(1.0), glm::vec3(pos));
-		glm::mat4 zR = glm::rotate(glm::mat4(1.0), glm::radians(rot.z), glm::vec3(0, 0, 1));
-		glm::mat4 yR = glm::rotate(glm::mat4(1.0), glm::radians(rot.y), glm::vec3(0, 1, 0));
-		glm::mat4 xR = glm::rotate(glm::mat4(1.0), glm::radians(rot.x), glm::vec3(1, 0, 0));
+		glm::mat4 R = glm::rotate(glm::mat4(1.0), glm::radians(rot), glm::vec3(0, 1, 0));
 		glm::mat4 S = glm::scale(glm::mat4(1.0), scale);      // added this scale if you want to change size of object
-		return T*zR*yR*xR*S;
+		return T*R*S;
 	}
 
 
 	glm::vec3 pos;
-	float rotZ = 0.0;    // degrees 
-
-  glm::vec3 rot = glm::vec3(0.0);
+	float rot = 0.0;    // degrees 
 
 	glm::vec3 scale = glm::vec3(1, 1, 1);
 
-	glm::vec3 heading() {
+	glm::vec3 headingY() {
 		return glm::normalize(glm::vec3(getTransform() * glm::vec4(0, 1, 0, 0)));
 	}
 
+	glm::vec3 headingZ() {
+		return glm::normalize(glm::vec3(getTransform() * glm::vec4(0, 0, 1, 0)));
+	}
+
+	glm::vec3 headingX() {
+		return glm::normalize(glm::vec3(getTransform() * glm::vec4(1, 0, 0, 0)));
+	}
+
   ofxAssimpModelLoader model;
+	Box bounds;
 
   ofVec3f velocity;
 	ofVec3f acceleration;
@@ -58,11 +69,17 @@ public:
 	float		damping;
 	float   mass;
 	float   radius;
-	glm::vec3 	rotSpeed;
-	glm::vec3 	rotAccel;
-	glm::vec3		rotForce;
+	float 	rotSpeed;
+	float 	rotAccel;
+	float		rotForce;
 
   void integrate();
 
   void loadModel();
+
+	Box getTransformBounds();
+
+	void landedLogic();
+
+	float calculateAltitude(Octree ground);
 };

@@ -53,7 +53,6 @@ class ofApp : public ofBaseApp{
 
 		Lander ship;
 
-
 		ofxIntSlider numLevels;
 		ofxPanel gui;
 		ofxToggle bTimingInfo;
