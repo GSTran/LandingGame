@@ -61,7 +61,7 @@ void Lander::landedLogic() {
 }
 
 float Lander::calculateAltitude(Octree ground) {
-	Ray altitudeSensor = Ray(Vector3(pos.x, pos.y, pos.z), Vector3(pos.x, pos.y - 10, pos.z));
+	Ray altitudeSensor = Ray(Vector3(pos.x, pos.y, pos.z), Vector3(pos.x, pos.y - 100000, pos.z));
 	TreeNode selectedNode;
 	if(ground.intersect(altitudeSensor, ground.root, selectedNode))
 		return glm::distance(ground.mesh.getVertex(selectedNode.points[0]), pos);
