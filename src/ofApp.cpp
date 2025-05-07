@@ -87,8 +87,8 @@ void ofApp::update() {
 	if (keymap[OF_KEY_UP]) ship.forces += 2 * ship.headingY();
 	if (keymap['d'] || keymap['D']) ship.forces += -10 * ship.headingX();
 	if (keymap['a'] || keymap['A']) ship.forces += 10 * ship.headingX();
-	if (keymap['w'] || keymap['W']) ship.forces += 10 * ship.headingZ();
-	if (keymap['s'] || keymap['S']) ship.forces += -10 * ship.headingZ();	
+	if (keymap['s'] || keymap['S']) ship.forces += 10 * ship.headingZ();
+	if (keymap['w'] || keymap['W']) ship.forces += -10 * ship.headingZ();	
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
