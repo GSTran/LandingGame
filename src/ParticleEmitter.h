@@ -31,7 +31,7 @@ public:
 	void setDamping(float d) { damping = d; }
 	void update();
 	void spawn(float time);
-	void setPosition(glm::vec3 pos) { position = pos; }
+	void setPosition(glm::vec3 pos) { setPosition(pos) }
 	ParticleSystem *sys;
 	float rate;         // per sec
 	bool oneShot;

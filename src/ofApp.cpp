@@ -71,7 +71,7 @@ void ofApp::setup(){
 		cout << "Particle Texture File: images/dot.png not found" << endl;
 		ofExit();
 	}
-	emitter.setPosition(ofVec3f(0, 10, 0));
+	emitter.setPosition(ofVec3f(0, 0, 0));
 	emitter.setVelocity(ofVec3f(0, -20, 0));
 	emitter.setOneShot(true);
 	emitter.setEmitterType(RadialEmitter);
@@ -150,7 +150,7 @@ void ofApp::update() {
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 
 	ship.integrate();
-	// emitter.setPosition(ship.pos);
+	emitter.setPosition(ship.pos);
 	emitter.update();
 	cout << "Particle count: " << emitter.sys->particles.size() << endl;
 	// cout << ship.calculateAltitude(octree) << endl;
@@ -172,7 +172,7 @@ void ofApp::draw() {
 	ofMesh mesh;
 
 	// Game ship draw code starts here
-	ship.draw();
+	// ship.draw();
 
 	// draw colliding boxes
 	//
