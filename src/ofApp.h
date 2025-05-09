@@ -40,10 +40,11 @@ class ofApp : public ofBaseApp{
 		bool raySelectWithOctree(ofVec3f &pointRet);
 		glm::vec3 getMousePointOnPlane(glm::vec3 p , glm::vec3 n);
 		void loadVbo();
+		void drawParticles();
 
 		ofEasyCam cam;
 		ofxAssimpModelLoader mars, lander;
-		ofLight light;
+		ofLight light, keyLight;
 		Box boundingBox, landerBounds;
 		Box testBox;
 		vector<Box> colBoxList;

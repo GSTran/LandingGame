@@ -42,6 +42,17 @@ void ofApp::setup(){
 
 	mars.setScaleNormalization(false);
 
+	// keyLight.setup();
+	// keyLight.enable();
+	// keyLight.setAreaLight(1, 1);
+	// keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	// keyLight.setDiffuseColor(ofFloatColor(0.1, 0.1, 0.1));
+	// keyLight.setSpecularColor(ofFloatColor(0.1, 0.1, 0.1));
+
+	// keyLight.setPosition(glm::vec3(0.0, 20, 0.0));
+	// keyLight.tilt(60); // Rotate the light around the X-axis
+
+
 	// create sliders for testing
 	//
 	gui.setup();
@@ -67,15 +78,15 @@ void ofApp::setup(){
 
 	// load textures
 	//
-	if (!ofLoadImage(particleTex, "images/dot.png")) {
+	if (!ofLoadImage(particleTex, "images/smoke.png")) {
 		cout << "Particle Texture File: images/dot.png not found" << endl;
 		ofExit();
 	}
 	emitter.setPosition(ofVec3f(0, 0, 0));
-	emitter.setVelocity(ofVec3f(0, -20, 0));
+	emitter.setVelocity(ofVec3f(0, 10, 0));
 	emitter.setOneShot(true);
-	emitter.setEmitterType(RadialEmitter);
-	emitter.setParticleRadius(0.2);
+	emitter.setEmitterType(DirectionalEmitter);
+	emitter.setParticleRadius(100);
 	emitter.setLifespanRange(ofVec2f(3.0, 5.0));
 	emitter.setMass(1);
 	emitter.setDamping(0.99);
@@ -98,7 +109,7 @@ void ofApp::loadVbo() {
 	vector<ofVec3f> points;
 	for (int i = 0; i < emitter.sys->particles.size(); i++) {
 		points.push_back(emitter.sys->particles[i].position);
-		sizes.push_back(ofVec3f(0.5));
+		sizes.push_back(ofVec3f(100.0));
 	}
 	// upload the data to the vbo
 	//
@@ -140,7 +151,7 @@ void ofApp::update() {
 
 
 	if (colBoxList.size() < 10) {
-		ship.forces += glm::vec3(0.0, -0.8, 0.0); // Gravity Force
+		ship.forces += glm::vec3(0.0, -1.0, 0.0); // Gravity Force
 	} else if (!keymap[OF_KEY_UP]){
 		if (ship.velocity.length() > 5.0f) cout << "CRASH" << endl;
 		ship.landedLogic();
@@ -164,6 +175,7 @@ void ofApp::draw() {
 	if (!bHide) gui.draw();
 	glDepthMask(true);
 	
+	
 	cam.begin();
 
 	ofPushMatrix();
@@ -172,7 +184,7 @@ void ofApp::draw() {
 	ofMesh mesh;
 
 	// Game ship draw code starts here
-	// ship.draw();
+	ship.draw();
 
 	// draw colliding boxes
 	//
@@ -180,30 +192,8 @@ void ofApp::draw() {
 	for (int i = 0; i < colBoxList.size(); i++) {
 		Octree::drawBox(colBoxList[i]);
 	}
-
-	shader.begin();
-	particleTex.bind();
-	vbo.draw(GL_POINTS, 0, (int)emitter.sys->particles.size());
-	particleTex.unbind();
-	shader.end();
-
+	
 	// Game ship draw code ends here
-	if (bTerrainSelected) drawAxis(ofVec3f(0, 0, 0));
-
-
-	if (bDisplayPoints) {                // display points as an option    
-		glPointSize(3);
-		ofSetColor(ofColor::green);
-		mars.drawVertices();
-	}
-
-	// highlight selected point (draw sphere around selected point)
-	//
-	if (bPointSelected) {
-		ofSetColor(ofColor::blue);
-		ofDrawSphere(selectedPoint, 10);
-	}
-
 
 	// recursively draw octree
 	//
@@ -223,33 +213,62 @@ void ofApp::draw() {
 	ofPopMatrix();
 	cam.end();
 
+	drawParticles();
+
+
 }
 
+void ofApp::drawParticles(){
 
-// 
-// Draw an XYZ axis in RGB at world (0,0,0) for reference.
-//
-void ofApp::drawAxis(ofVec3f location) {
+	loadVbo();
 
+	// draw a grid
+	//
+	cam.begin();
 	ofPushMatrix();
-	ofTranslate(location);
-
-	ofSetLineWidth(1.0);
-
-	// X Axis
-	ofSetColor(ofColor(255, 0, 0));
-	ofDrawLine(ofPoint(0, 0, 0), ofPoint(1, 0, 0));
-	
-
-	// Y Axis
-	ofSetColor(ofColor(0, 255, 0));
-	ofDrawLine(ofPoint(0, 0, 0), ofPoint(0, 1, 0));
-
-	// Z Axis
-	ofSetColor(ofColor(0, 0, 255));
-	ofDrawLine(ofPoint(0, 0, 0), ofPoint(0, 0, 1));
-
+	ofRotateDeg(90, 0, 0, 1);
+	ofSetLineWidth(1);
+	ofSetColor(ofColor::dimGrey);
+	ofDrawGridPlane();
 	ofPopMatrix();
+	cam.end();
+
+	glDepthMask(GL_FALSE);
+
+	// ofSetColor(255, 100, 90);
+
+	// this makes everything look glowy :)
+	//
+	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	ofEnablePointSprites();
+	ofEnableLighting();
+
+
+	// begin drawing in the camera
+	//
+	shader.begin();
+	cam.begin();
+
+	// draw particle emitter here..
+	//
+	// emitter.draw();
+	particleTex.bind();
+	vbo.draw(GL_POINTS, 0, (int)emitter.sys->particles.size());
+	particleTex.unbind();
+
+	//  end drawing in the camera
+	// 
+	cam.end();
+	shader.end();
+
+	ofDisablePointSprites();
+	ofDisableBlendMode();
+	ofDisableLighting();
+	ofEnableAlphaBlending();
+
+	// set back the depth mask
+	//
+	glDepthMask(GL_TRUE);
 }
 
 
@@ -406,7 +425,7 @@ void ofApp::initLightingAndMaterials() {
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-//	glEnable(GL_LIGHT1);
+	// glEnable(GL_LIGHT1);
 	glShadeModel(GL_SMOOTH);
 } 
 

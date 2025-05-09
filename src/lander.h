@@ -30,7 +30,6 @@ public:
 		ofMultMatrix(getTransform());
     model.drawFaces();
 		ofPopMatrix();
-		ofDrawLine(pos, glm::vec3(pos.x, pos.y - 10, pos.z));
 		// Octree::drawBox(getTransformBounds());
 	}
 
