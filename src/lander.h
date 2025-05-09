@@ -29,10 +29,9 @@ public:
 		ofPushMatrix();
 		ofMultMatrix(getTransform());
     model.drawFaces();
-		ofDrawSphere(2);
 		ofPopMatrix();
 		ofDrawLine(pos, glm::vec3(pos.x, pos.y - 10, pos.z));
-		Octree::drawBox(getTransformBounds());
+		// Octree::drawBox(getTransformBounds());
 	}
 
 	glm::mat4 getTransform() {

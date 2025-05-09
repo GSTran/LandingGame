@@ -63,6 +63,49 @@ void ofApp::setup(){
 
 	ship.loadModel();
 
+	ofDisableArbTex();     // disable rectangular textures
+
+	// load textures
+	//
+	if (!ofLoadImage(particleTex, "images/dot.png")) {
+		cout << "Particle Texture File: images/dot.png not found" << endl;
+		ofExit();
+	}
+	emitter.setPosition(ofVec3f(0, 10, 0));
+	emitter.setVelocity(ofVec3f(0, -20, 0));
+	emitter.setOneShot(true);
+	emitter.setEmitterType(RadialEmitter);
+	emitter.setParticleRadius(0.2);
+	emitter.setLifespanRange(ofVec2f(3.0, 5.0));
+	emitter.setMass(1);
+	emitter.setDamping(0.99);
+	emitter.setGroupSize(1);
+
+	// load the shader
+	//
+#ifdef TARGET_OPENGLES
+	shader.load("shaders_gles/shader");
+#else
+	shader.load("shaders/shader");
+#endif
+}
+
+// Emitter rendering buffer
+void ofApp::loadVbo() {
+	if (emitter.sys->particles.size() < 1) return;
+
+	vector<ofVec3f> sizes; 
+	vector<ofVec3f> points;
+	for (int i = 0; i < emitter.sys->particles.size(); i++) {
+		points.push_back(emitter.sys->particles[i].position);
+		sizes.push_back(ofVec3f(0.5));
+	}
+	// upload the data to the vbo
+	//
+	int total = (int)points.size();
+	vbo.clear();
+	vbo.setVertexData(&points[0], total, GL_STATIC_DRAW);
+	vbo.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
  
 //--------------------------------------------------------------
@@ -84,11 +127,14 @@ void ofApp::update() {
 			collisionResolution = false;
 	}	
 
-	if (keymap[OF_KEY_UP]) ship.forces += 2 * ship.headingY();
-	if (keymap['d'] || keymap['D']) ship.forces += -10 * ship.headingX();
-	if (keymap['a'] || keymap['A']) ship.forces += 10 * ship.headingX();
-	if (keymap['w'] || keymap['W']) ship.forces += 10 * ship.headingZ();
-	if (keymap['s'] || keymap['S']) ship.forces += -10 * ship.headingZ();	
+	if (keymap[OF_KEY_UP])  {
+
+		ship.forces += 2 * ship.headingY();
+	}
+	if (keymap['a'] || keymap['A']) ship.forces += -10 * ship.headingX();
+	if (keymap['d'] || keymap['D']) ship.forces += 10 * ship.headingX();
+	if (keymap['s'] || keymap['S']) ship.forces += 10 * ship.headingZ();
+	if (keymap['w'] || keymap['W']) ship.forces += -10 * ship.headingZ();	
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
@@ -104,7 +150,10 @@ void ofApp::update() {
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 
 	ship.integrate();
-	cout << ship.calculateAltitude(octree) << endl;
+	// emitter.setPosition(ship.pos);
+	emitter.update();
+	cout << "Particle count: " << emitter.sys->particles.size() << endl;
+	// cout << ship.calculateAltitude(octree) << endl;
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -114,8 +163,9 @@ void ofApp::draw() {
 	glDepthMask(false);
 	if (!bHide) gui.draw();
 	glDepthMask(true);
-
+	
 	cam.begin();
+
 	ofPushMatrix();
 	if (bWireframe) {                    // wireframe mode  (include axis)
 		ofDisableLighting();
@@ -141,6 +191,12 @@ void ofApp::draw() {
 		for (int i = 0; i < colBoxList.size(); i++) {
 			Octree::drawBox(colBoxList[i]);
 		}
+
+		shader.begin();
+		particleTex.bind();
+		vbo.draw(GL_POINTS, 0, (int)emitter.sys->particles.size());
+		particleTex.unbind();
+		shader.end();
 
 		// Game ship draw code ends here
 
@@ -222,6 +278,7 @@ void ofApp::draw() {
 
 	ofPopMatrix();
 	cam.end();
+
 }
 
 
@@ -313,8 +370,13 @@ void ofApp::keyPressed(int key) {
 	// case 'p':
 	// 	if (colBoxList.size() > 10) collisionResolution = true;
 	// 	break;
-	// default:
-	// 	break;
+	case ' ':
+		cout << "Emitter" << endl;
+		emitter.sys->reset();
+		emitter.start();
+		break;
+	default:
+		break;
 	}
 	keymap[key] = true;
 

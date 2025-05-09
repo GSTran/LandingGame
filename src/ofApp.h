@@ -39,6 +39,7 @@ class ofApp : public ofBaseApp{
 		bool mouseIntersectPlane(ofVec3f planePoint, ofVec3f planeNorm, ofVec3f &point);
 		bool raySelectWithOctree(ofVec3f &pointRet);
 		glm::vec3 getMousePointOnPlane(glm::vec3 p , glm::vec3 n);
+		void loadVbo();
 
 		ofEasyCam cam;
 		ofxAssimpModelLoader mars, lander;
@@ -53,6 +54,20 @@ class ofApp : public ofBaseApp{
 		bool bInDrag = false;
 
 		Lander ship;
+
+		ParticleEmitter emitter;
+
+		TurbulenceForce *turbForce;
+		GravityForce *gravityForce;
+		ImpulseRadialForce *radialForce;
+		CyclicForce *cyclicForce;
+
+		ofTexture  particleTex;
+
+		// shaders
+		//
+		ofVbo vbo;
+		ofShader shader;
 
 		ofxIntSlider numLevels;
 		ofxPanel gui;
