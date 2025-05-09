@@ -83,7 +83,7 @@ void ofApp::setup(){
 		ofExit();
 	}
 	emitter.setPosition(ofVec3f(0, 0, 0));
-	emitter.setVelocity(ofVec3f(0, 10, 0));
+	emitter.setVelocity(ofVec3f(0, -10, 0));
 	emitter.setOneShot(true);
 	emitter.setEmitterType(DirectionalEmitter);
 	emitter.setParticleRadius(100);
@@ -91,6 +91,8 @@ void ofApp::setup(){
 	emitter.setMass(1);
 	emitter.setDamping(0.99);
 	emitter.setGroupSize(1);
+
+	ship.pos = glm::vec3(0.0, 10, 0.0);
 
 	// load the shader
 	//
@@ -139,7 +141,8 @@ void ofApp::update() {
 	}	
 
 	if (keymap[OF_KEY_UP])  {
-
+		emitter.sys->reset();
+		emitter.start();
 		ship.forces += 2 * ship.headingY();
 	}
 	if (keymap['a'] || keymap['A']) ship.forces += -10 * ship.headingX();
@@ -161,9 +164,8 @@ void ofApp::update() {
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 
 	ship.integrate();
-	emitter.setPosition(ship.pos);
+	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
-	cout << "Particle count: " << emitter.sys->particles.size() << endl;
 	// cout << ship.calculateAltitude(octree) << endl;
 }
 //--------------------------------------------------------------
