@@ -141,7 +141,3 @@ void CyclicForce::updateForce(Particle * particle) {
 	ofVec3f dir = norm.cross(ofVec3f(0, 1, 0));
 	particle->forces += dir.getNormalized() * magnitude;
 }
-
-void ThrusterForce::updateForce(Particle * particle) {
-	particle->forces += thrust;
-}

@@ -44,8 +44,6 @@ void ParticleEmitter::init() {
 	type = DirectionalEmitter;
 	groupSize = 1;
 	damping = .99;
-	particleColor = ofColor::red;
-	position = ofVec3f(0, 0, 0);
 }
 
 
@@ -67,7 +65,6 @@ void ParticleEmitter::draw() {
 	sys->draw();  
 }
 void ParticleEmitter::start() {
-	if (started) return;
 	started = true;
 	lastSpawned = ofGetElapsedTimeMillis();
 }
@@ -85,9 +82,8 @@ void ParticleEmitter::update() {
 
 			// spawn a new particle(s)
 			//
-			for (int i = 0; i < groupSize; i++) {
+			for (int i = 0; i < groupSize; i++)
 				spawn(time);
-			}
 
 			lastSpawned = time;
 		}
@@ -119,12 +115,12 @@ void ParticleEmitter::spawn(float time) {
 	//
 	switch (type) {
 	case RadialEmitter:
-	  {
+	{
 		ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1));
 		float speed = velocity.length();
 		particle.velocity = dir.getNormalized() * speed;
 		particle.position.set(position);
-	  }
+	}
 	break;
 	case SphereEmitter:
 		break;
@@ -132,13 +128,6 @@ void ParticleEmitter::spawn(float time) {
 		particle.velocity = velocity;
 		particle.position.set(position);
 		break;
-	case DiscEmitter:   // x-z plane
-	  {  
-		ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(-.2, .2), ofRandom(-1, 1));
-	//	dir.y = 0; 
-		particle.position.set(position + (dir.normalized() * radius));
-		particle.velocity = velocity;
-	  }
 	}
 
 	// other particle attributes
@@ -151,7 +140,6 @@ void ParticleEmitter::spawn(float time) {
 	particle.radius = particleRadius;
 	particle.mass = mass;
 	particle.damping = damping;
-	particle.color = particleColor;
 
 	// add to system
 	//

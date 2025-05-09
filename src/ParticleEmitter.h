@@ -4,7 +4,7 @@
 #include "TransformObject.h"
 #include "ParticleSystem.h"
 
-typedef enum { DirectionalEmitter, RadialEmitter, SphereEmitter, DiscEmitter } EmitterType;
+typedef enum { DirectionalEmitter, RadialEmitter, SphereEmitter } EmitterType;
 
 //  General purpose Emitter class for emitting sprites
 //  This works similar to a Particle emitter
@@ -31,6 +31,7 @@ public:
 	void setDamping(float d) { damping = d; }
 	void update();
 	void spawn(float time);
+	void setPosition(glm::vec3 pos) { position = pos; }
 	ParticleSystem *sys;
 	float rate;         // per sec
 	bool oneShot;
@@ -44,7 +45,6 @@ public:
 	bool started;
 	float lastSpawned;  // ms
 	float particleRadius;
-	ofColor particleColor;
 	float radius;
 	bool visible;
 	int groupSize;      // number of particles to spawn in a group

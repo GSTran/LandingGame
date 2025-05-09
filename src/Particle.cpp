@@ -18,8 +18,8 @@ Particle::Particle() {
 }
 
 void Particle::draw() {
-	ofSetColor(color);
-//	ofSetColor(ofMap(age(), 0, lifespan, 255, 10), 0, 0);
+//	ofSetColor(color);
+	ofSetColor(ofMap(age(), 0, lifespan, 255, 10), 0, 0);
 	ofDrawSphere(position, radius);
 }
 
@@ -27,14 +27,10 @@ void Particle::draw() {
 //
 void Particle::integrate() {
 
-	// check for 0 framerate to avoid divide errors
-	//
-	float framerate = ofGetFrameRate();
-	if (framerate < 1.0) return;
-
+	
 	// interval for this step
 	//
-	float dt = 1.0 / framerate;
+	float dt = 1.0 / ofGetFrameRate();
 
 	// update position based on velocity
 	//
