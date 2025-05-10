@@ -43,6 +43,8 @@ class ofApp : public ofBaseApp{
 		void drawParticles();
 
 		ofEasyCam cam;
+		ofCamera topCam;
+		ofCamera *camPointer;
 		ofxAssimpModelLoader mars, lander;
 		ofLight light, keyLight;
 		Box boundingBox, landerBounds;

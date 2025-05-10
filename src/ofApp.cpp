@@ -25,11 +25,17 @@ void ofApp::setup(){
 	bLanderLoaded = false;
 	bTerrainSelected = true;
 //	ofSetWindowShape(1024, 768);
+
+	camPointer = &cam;
+
 	cam.setDistance(10);
 	cam.setNearClip(.1);
 	cam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	ofSetVerticalSync(true);
-	cam.disableMouseInput();
+	cam.enableMouseInput();
+	cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
+	cam.lookAt(ship.pos);
+
 	ofEnableSmoothing();
 	ofEnableDepthTest();
 
@@ -83,14 +89,17 @@ void ofApp::setup(){
 		ofExit();
 	}
 	emitter.setPosition(ofVec3f(0, 0, 0));
-	emitter.setVelocity(ofVec3f(0, -10, 0));
+	emitter.setVelocity(ofVec3f(0, -15, 0));
 	emitter.setOneShot(true);
 	emitter.setEmitterType(DirectionalEmitter);
-	emitter.setParticleRadius(100);
-	emitter.setLifespanRange(ofVec2f(3.0, 5.0));
-	emitter.setMass(1);
-	emitter.setDamping(0.99);
+	emitter.setParticleRadius(10);
+	emitter.setLifespanRange(ofVec2f(4.0, 5.0));
+	emitter.setMass(0.1);
+	emitter.setDamping(0.97);
 	emitter.setGroupSize(1);
+
+	turbForce = new TurbulenceForce(ofVec3f(-3.0, 0.0, -3.0), ofVec3f(3.0, 0.0, 3.0));
+	emitter.sys->addForce(turbForce);
 
 	ship.pos = glm::vec3(0.0, 10, 0.0);
 
@@ -167,6 +176,8 @@ void ofApp::update() {
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
 	// cout << ship.calculateAltitude(octree) << endl;
+
+	cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -178,7 +189,7 @@ void ofApp::draw() {
 	glDepthMask(true);
 	
 	
-	cam.begin();
+	camPointer->begin();
 
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
@@ -213,7 +224,7 @@ void ofApp::draw() {
 	}
 
 	ofPopMatrix();
-	cam.end();
+	camPointer->end();
 
 	drawParticles();
 
@@ -226,14 +237,14 @@ void ofApp::drawParticles(){
 
 	// draw a grid
 	//
-	cam.begin();
+	camPointer->begin();
 	ofPushMatrix();
 	ofRotateDeg(90, 0, 0, 1);
 	ofSetLineWidth(1);
 	ofSetColor(ofColor::dimGrey);
 	ofDrawGridPlane();
 	ofPopMatrix();
-	cam.end();
+	camPointer->end();
 
 	glDepthMask(GL_FALSE);
 
@@ -249,7 +260,7 @@ void ofApp::drawParticles(){
 	// begin drawing in the camera
 	//
 	shader.begin();
-	cam.begin();
+	camPointer->begin();
 
 	// draw particle emitter here..
 	//
@@ -260,7 +271,7 @@ void ofApp::drawParticles(){
 
 	//  end drawing in the camera
 	// 
-	cam.end();
+	camPointer->end();
 	shader.end();
 
 	ofDisablePointSprites();
@@ -273,15 +284,14 @@ void ofApp::drawParticles(){
 	glDepthMask(GL_TRUE);
 }
 
-
 void ofApp::keyPressed(int key) {
 
 	switch (key) {
-	case 'C':
-	case 'c':
-		if (cam.getMouseInputEnabled()) cam.disableMouseInput();
-		else cam.enableMouseInput();
-		break;
+	// case 'C':
+	// case 'c':
+	// 	if (cam.getMouseInputEnabled()) cam.disableMouseInput();
+	// 	else cam.enableMouseInput();
+	// 	break;
 	case 'O':
 	case 'o':
 		bDisplayOctree = !bDisplayOctree;
