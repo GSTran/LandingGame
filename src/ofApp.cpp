@@ -36,6 +36,13 @@ void ofApp::setup(){
 	cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
 	cam.lookAt(ship.pos);
 
+	topCam.setDistance(10);
+	topCam.setNearClip(.1);
+	topCam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
+	topCam.enableMouseInput();
+	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
+	topCam.lookAt(ship.pos);
+
 	ofEnableSmoothing();
 	ofEnableDepthTest();
 
@@ -98,7 +105,7 @@ void ofApp::setup(){
 	emitter.setDamping(0.97);
 	emitter.setGroupSize(1);
 
-	turbForce = new TurbulenceForce(ofVec3f(-3.0, 0.0, -3.0), ofVec3f(3.0, 0.0, 3.0));
+	turbForce = new TurbulenceForce(ofVec3f(-2.5, 0.0, -2.5), ofVec3f(2.5, 0.0, 2.5));
 	emitter.sys->addForce(turbForce);
 
 	ship.pos = glm::vec3(0.0, 10, 0.0);
@@ -134,36 +141,24 @@ void ofApp::loadVbo() {
 // incrementally update scene (animation)
 //
 void ofApp::update() {
-	if (collisionResolution) {
-		glm::vec3 pos = lander.getPosition();
-		pos += glm::vec3(0.0, 0.1, 0.0);
-		lander.setPosition(pos.x, pos.y, pos.z);
-
-		colBoxList.clear();
-		ofVec3f min = lander.getSceneMin() + lander.getPosition();
-		ofVec3f max = lander.getSceneMax() + lander.getPosition();
-		Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
-		octree.intersect(bounds, octree.root, colBoxList);
-
-		if (colBoxList.size() <= 10)
-			collisionResolution = false;
-	}	
-
 	if (keymap[OF_KEY_UP])  {
-		emitter.sys->reset();
-		emitter.start();
-		ship.forces += 2 * ship.headingY();
+		if (ofGetFrameNum() % 5 == 0) {
+			emitter.sys->reset();
+			emitter.start();
+    }
+		ship.forces += 3 * ship.headingY();
 	}
-	if (keymap['a'] || keymap['A']) ship.forces += -10 * ship.headingX();
-	if (keymap['d'] || keymap['D']) ship.forces += 10 * ship.headingX();
-	if (keymap['s'] || keymap['S']) ship.forces += 10 * ship.headingZ();
-	if (keymap['w'] || keymap['W']) ship.forces += -10 * ship.headingZ();	
+	if (keymap['a'] || keymap['A']) ship.forces += -5 * ship.headingX();
+	if (keymap['d'] || keymap['D']) ship.forces += 5 * ship.headingX();
+	if (keymap['s'] || keymap['S']) ship.forces += 5 * ship.headingZ();
+	if (keymap['w'] || keymap['W']) ship.forces += -5 * ship.headingZ();	
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
+	cout << emitter.sys->particles.size() << endl;
 
 	if (colBoxList.size() < 10) {
-		ship.forces += glm::vec3(0.0, -1.0, 0.0); // Gravity Force
+		ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 	} else if (!keymap[OF_KEY_UP]){
 		if (ship.velocity.length() > 5.0f) cout << "CRASH" << endl;
 		ship.landedLogic();
@@ -178,6 +173,10 @@ void ofApp::update() {
 	// cout << ship.calculateAltitude(octree) << endl;
 
 	cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
+	cam.lookAt(ship.pos);
+
+	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
+	topCam.lookAt(ship.pos);
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -227,8 +226,6 @@ void ofApp::draw() {
 	camPointer->end();
 
 	drawParticles();
-
-
 }
 
 void ofApp::drawParticles(){
@@ -287,11 +284,16 @@ void ofApp::drawParticles(){
 void ofApp::keyPressed(int key) {
 
 	switch (key) {
-	// case 'C':
-	// case 'c':
-	// 	if (cam.getMouseInputEnabled()) cam.disableMouseInput();
-	// 	else cam.enableMouseInput();
-	// 	break;
+	case 'C':
+	case 'c':
+		if (cameraSelector == 1) {
+			camPointer = &topCam;
+			cameraSelector *= -1;
+		} else {
+			camPointer = &cam;
+			cameraSelector *= -1;
+		}
+		break;
 	case 'O':
 	case 'o':
 		bDisplayOctree = !bDisplayOctree;
@@ -337,7 +339,6 @@ void ofApp::keyReleased(int key) {
 	}
 	keymap[key] = false;
 }
-
 
 
 //--------------------------------------------------------------

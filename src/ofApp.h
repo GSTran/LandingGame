@@ -42,8 +42,7 @@ class ofApp : public ofBaseApp{
 		void loadVbo();
 		void drawParticles();
 
-		ofEasyCam cam;
-		ofCamera topCam;
+		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
 		ofxAssimpModelLoader mars, lander;
 		ofLight light, keyLight;
@@ -100,5 +99,6 @@ class ofApp : public ofBaseApp{
 		const float selectionRange = 4.0;
 
 		map<int, bool> keymap;
+		int cameraSelector = 1;
 
 };
