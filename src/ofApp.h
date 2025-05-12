@@ -41,13 +41,14 @@ class ofApp : public ofBaseApp{
 		glm::vec3 getMousePointOnPlane(glm::vec3 p , glm::vec3 n);
 		void loadVbo();
 		void drawParticles();
+		void initEmitters();
+		void initThreePointLighting();
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
 		ofxAssimpModelLoader mars, lander;
-		ofLight light, keyLight;
+		ofLight keyLight, fillLight, ambLight;
 		Box boundingBox, landerBounds;
-		Box testBox;
 		vector<Box> colBoxList;
 		bool bLanderSelected = false;
 		Octree octree;

@@ -57,13 +57,13 @@ void ofApp::setup(){
 
 	// keyLight.setup();
 	// keyLight.enable();
-	// keyLight.setAreaLight(1, 1);
+	// keyLight.setAreaLight(10, 10);
 	// keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
 	// keyLight.setDiffuseColor(ofFloatColor(0.1, 0.1, 0.1));
 	// keyLight.setSpecularColor(ofFloatColor(0.1, 0.1, 0.1));
 
-	// keyLight.setPosition(glm::vec3(0.0, 20, 0.0));
-	// keyLight.tilt(60); // Rotate the light around the X-axis
+	// keyLight.setPosition(glm::vec3(0.0, 1000, 0.0));
+	// keyLight.tilt(90);
 
 
 	// create sliders for testing
@@ -76,14 +76,7 @@ void ofApp::setup(){
 	//  Create Octree for testing.
 	//
 	
-	int t1 = ofGetElapsedTimeMillis();
 	octree.create(mars.getMesh(0), 20);
-	int t2 = ofGetElapsedTimeMillis();
-	cout << "Time to build the tree: " << t2 - t1 << endl;
-	
-	cout << "Number of Verts: " << mars.getMesh(0).getNumVertices() << endl;
-
-	testBox = Box(Vector3(3, 3, 0), Vector3(5, 5, 2));
 
 	ship.loadModel();
 
@@ -95,18 +88,8 @@ void ofApp::setup(){
 		cout << "Particle Texture File: images/dot.png not found" << endl;
 		ofExit();
 	}
-	emitter.setPosition(ofVec3f(0, 0, 0));
-	emitter.setVelocity(ofVec3f(0, -15, 0));
-	emitter.setOneShot(true);
-	emitter.setEmitterType(DirectionalEmitter);
-	emitter.setParticleRadius(10);
-	emitter.setLifespanRange(ofVec2f(4.0, 5.0));
-	emitter.setMass(0.1);
-	emitter.setDamping(0.97);
-	emitter.setGroupSize(1);
 
-	turbForce = new TurbulenceForce(ofVec3f(-2.5, 0.0, -2.5), ofVec3f(2.5, 0.0, 2.5));
-	emitter.sys->addForce(turbForce);
+	initEmitters();
 
 	ship.pos = glm::vec3(0.0, 10, 0.0);
 
@@ -204,6 +187,8 @@ void ofApp::draw() {
 	for (int i = 0; i < colBoxList.size(); i++) {
 		Octree::drawBox(colBoxList[i]);
 	}
+
+	// keyLight.draw();
 	
 	// Game ship draw code ends here
 
@@ -232,20 +217,9 @@ void ofApp::drawParticles(){
 
 	loadVbo();
 
-	// draw a grid
-	//
-	camPointer->begin();
-	ofPushMatrix();
-	ofRotateDeg(90, 0, 0, 1);
-	ofSetLineWidth(1);
 	ofSetColor(ofColor::dimGrey);
-	ofDrawGridPlane();
-	ofPopMatrix();
-	camPointer->end();
-
 	glDepthMask(GL_FALSE);
 
-	// ofSetColor(255, 100, 90);
 
 	// this makes everything look glowy :)
 	//
@@ -441,6 +415,25 @@ void ofApp::initLightingAndMaterials() {
 	// glEnable(GL_LIGHT1);
 	glShadeModel(GL_SMOOTH);
 } 
+
+void ofApp::initEmitters() {
+	emitter.setPosition(ofVec3f(0, 0, 0));
+	emitter.setVelocity(ofVec3f(0, -15, 0));
+	emitter.setOneShot(true);
+	emitter.setEmitterType(DirectionalEmitter);
+	emitter.setParticleRadius(10);
+	emitter.setLifespanRange(ofVec2f(4.0, 5.0));
+	emitter.setMass(0.1);
+	emitter.setDamping(0.97);
+	emitter.setGroupSize(1);
+
+	turbForce = new TurbulenceForce(ofVec3f(-2.5, 0.0, -2.5), ofVec3f(2.5, 0.0, 2.5));
+	emitter.sys->addForce(turbForce);
+}
+
+void ofApp::initThreePointLighting() {
+	
+}
 
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 
