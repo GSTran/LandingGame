@@ -31,7 +31,7 @@ void Lander::integrate() {
 }
 
 void Lander::loadModel() {
-  if (model.loadModel("geo/rocket2.obj")) {
+  if (model.loadModel("geo/lowPolyRocket.obj")) {
 		model.setScaleNormalization(false);
 		glm::vec3 bboxCenter = model.getSceneCenter();
     glm::vec3 offset = -bboxCenter;

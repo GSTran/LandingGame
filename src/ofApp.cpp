@@ -95,7 +95,8 @@ void ofApp::setup(){
 
 	initEmitters();
 
-	ship.pos = glm::vec3(0.0, 10, 0.0);
+	ship.pos = glm::vec3(0.0, 50, 0.0);
+	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(800, 1000), ofRandom(-1000, 1000));
 
 	// load the shader
 	//
@@ -162,7 +163,7 @@ void ofApp::update() {
 	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 
 
-	if (colBoxList.size() > 10) {
+	if (colBoxList.size() > 10 && !shipExplode) {
 		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
 		if (ship.velocity.length() > 5.0) {
 			cout << "CRASH" << endl;
@@ -171,18 +172,20 @@ void ofApp::update() {
 			explosionEmitter.start();
 		}
 	}
-	if (!keymap[OF_KEY_UP] && colBoxList.size() > 10) {
+	if (!keymap[OF_KEY_UP] && colBoxList.size() > 10 && !shipExplode) {
 		// TODO: Fix clipping into ground when up arrow held just before crash
 		ship.landedLogic();
+	}
+	if (shipExplode) {
+		ship.forces += explosionForce;
 	}
 
 	colBoxList.clear();
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
-
 	ship.integrate();
+
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
-
 	explosionEmitter.setPosition(ship.pos);
 	explosionEmitter.update();
 

@@ -69,6 +69,8 @@ class ofApp : public ofBaseApp{
 		ImpulseRadialForce *radialForce;
 		CyclicForce *cyclicForce;
 
+		ofVec3f explosionForce;
+
 		ofTexture  particleTex, explosionTex;
 
 		// shaders
