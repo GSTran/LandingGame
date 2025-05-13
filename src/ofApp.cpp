@@ -33,9 +33,9 @@ void ofApp::setup(){
 	cam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	ofSetVerticalSync(true);
 	cam.enableMouseInput();
-	cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
-	cam.lookAt(ship.pos);
+	cam.setTarget(ship.pos);
 
+	// TODO: Change to appear looking out of window when model updated
 	topCam.setDistance(10);
 	topCam.setNearClip(.1);
 	topCam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
@@ -91,7 +91,7 @@ void ofApp::setup(){
 
 	initEmitters();
 
-	ship.pos = glm::vec3(0.0, 10, 0.0);
+	ship.pos = glm::vec3(0.0, 50, 0.0);
 
 	// load the shader
 	//
@@ -138,11 +138,10 @@ void ofApp::update() {
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
-	cout << emitter.sys->particles.size() << endl;
-
 	if (colBoxList.size() < 10) {
 		ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 	} else if (!keymap[OF_KEY_UP]){
+		// TODO: Fix clipping into ground when up arrow held just before crash
 		if (ship.velocity.length() > 5.0f) cout << "CRASH" << endl;
 		ship.landedLogic();
 	}
@@ -155,8 +154,8 @@ void ofApp::update() {
 	emitter.update();
 	// cout << ship.calculateAltitude(octree) << endl;
 
-	cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
-	cam.lookAt(ship.pos);
+	// cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
+	cam.setTarget(ship.pos);
 
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
 	topCam.lookAt(ship.pos);
