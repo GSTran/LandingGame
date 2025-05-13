@@ -61,6 +61,8 @@ class ofApp : public ofBaseApp{
 
 		ParticleEmitter emitter, explosionEmitter;
 		bool shipExplode = false;
+		bool enableAltitude = false;
+		bool bMoveCamera = false;
 
 		TurbulenceForce *turbForce;
 		GravityForce *gravityForce;
@@ -92,8 +94,6 @@ class ofApp : public ofBaseApp{
 		bool bLanderLoaded;
 		bool bTerrainSelected;
 
-		bool collisionResolution = false;
-	
 		ofVec3f selectedPoint;
 		ofVec3f intersectPoint;
 

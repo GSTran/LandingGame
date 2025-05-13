@@ -75,7 +75,6 @@ void ofApp::setup(){
 
 	//  Create Octree for testing.
 	//
-	
 	octree.create(mars.getMesh(0), 20);
 
 	ship.loadModel();
@@ -160,16 +159,20 @@ void ofApp::update() {
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
-	if (colBoxList.size() < 10) {
-		ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
-	} else if (!keymap[OF_KEY_UP]){
-		// TODO: Fix clipping into ground when up arrow held just before crash
-		if (ship.velocity.length() > 5.0f) {
+	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
+
+
+	if (colBoxList.size() > 10) {
+		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
+		if (ship.velocity.length() > 5.0) {
 			cout << "CRASH" << endl;
 			shipExplode = true;
 			explosionEmitter.sys->reset();
 			explosionEmitter.start();
 		}
+	}
+	if (!keymap[OF_KEY_UP] && colBoxList.size() > 10) {
+		// TODO: Fix clipping into ground when up arrow held just before crash
 		ship.landedLogic();
 	}
 
@@ -183,12 +186,13 @@ void ofApp::update() {
 	explosionEmitter.setPosition(ship.pos);
 	explosionEmitter.update();
 
-	// cout << ship.calculateAltitude(octree) << endl;
-
 	cam.setTarget(ship.pos);
 
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
 	topCam.lookAt(ship.pos);
+
+	if (bMoveCamera) cam.disableMouseInput();
+	else cam.enableMouseInput();
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -196,7 +200,7 @@ void ofApp::draw() {
 	ofBackground(ofColor::black);
 
 	glDepthMask(false);
-	if (!bHide) gui.draw();
+	// if (!bHide) gui.draw();
 	glDepthMask(true);
 	
 	
@@ -230,8 +234,7 @@ void ofApp::draw() {
 	if (bDisplayLeafNodes) {
 		octree.drawLeafNodes(octree.root);
 		cout << "num leaf: " << octree.numLeaf << endl;
-    }
-	else if (bDisplayOctree) {
+  } else if (bDisplayOctree) {
 		ofNoFill();
 		octree.draw(numLevels, 0);
 	}
@@ -240,6 +243,12 @@ void ofApp::draw() {
 	camPointer->end();
 
 	drawParticles();
+
+	if (enableAltitude && ofGetFrameNum() % 10 == 0) 
+		ofDrawBitmapString("Altitude: " + std::to_string(ship.calculateAltitude(octree)), 10, 10);
+	
+	ofDrawBitmapString("Velocity: " + std::to_string(ship.velocity.length()), 10, 30);
+
 }
 
 void ofApp::drawParticles(){
@@ -302,6 +311,10 @@ void ofApp::keyPressed(int key) {
 			cameraSelector *= -1;
 		}
 		break;
+	case 'V':
+	case 'v':
+		bMoveCamera = !bMoveCamera;
+		break;
 	case 'O':
 	case 'o':
 		bDisplayOctree = !bDisplayOctree;
@@ -309,6 +322,10 @@ void ofApp::keyPressed(int key) {
 	case ' ':
 		explosionEmitter.sys->reset();
 		explosionEmitter.start();
+		break;
+	case 'X':
+	case 'x':
+		enableAltitude = !enableAltitude;
 		break;
 	default:
 		break;
@@ -362,12 +379,12 @@ void ofApp::mousePressed(int x, int y, int button) {
 	//
 	if (cam.getMouseInputEnabled()) return;
 
-	// if moving camera, don't allow mouse interaction
-//
-	if (cam.getMouseInputEnabled()) return;
+	if (bMoveCamera) {
+		ofVec3f p;
+		raySelectWithOctree(p);
+		cam.setPosition(p + ofVec3f(0.0, 1.0, 0.0));
+	}
 
-	// if rover is loaded, test for selection
-	//
 }
 
 //--------------------------------------------------------------
@@ -489,4 +506,25 @@ void ofApp::initThreePointLighting() {
 
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 
+}
+
+bool ofApp::raySelectWithOctree(ofVec3f &pointRet) {
+	ofVec3f mouse(mouseX, mouseY);
+	ofVec3f rayPoint = cam.screenToWorld(mouse);
+	ofVec3f rayDir = rayPoint - cam.getPosition();
+	rayDir.normalize();
+	Ray ray = Ray(Vector3(rayPoint.x, rayPoint.y, rayPoint.z),
+		Vector3(rayDir.x, rayDir.y, rayDir.z));
+	
+	int t1 = ofGetElapsedTimeMillis();
+	pointSelected = octree.intersect(ray, octree.root, selectedNode);
+	int t2 = ofGetElapsedTimeMillis();
+
+	if (bTimingInfo) cout << "Time for ray selection: " << t2 - t1 << endl;
+
+	if (pointSelected) {
+		pointRet = octree.mesh.getVertex(selectedNode.points[0]);
+	}
+
+	return pointSelected;
 }

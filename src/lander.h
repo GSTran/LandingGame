@@ -30,7 +30,7 @@ public:
 		ofMultMatrix(getTransform());
     model.drawFaces();
 		ofPopMatrix();
-		Octree::drawBox(getTransformBounds());
+		// Octree::drawBox(getTransformBounds());
 	}
 
 	glm::mat4 getTransform() {
