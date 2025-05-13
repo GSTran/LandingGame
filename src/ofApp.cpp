@@ -25,11 +25,24 @@ void ofApp::setup(){
 	bLanderLoaded = false;
 	bTerrainSelected = true;
 //	ofSetWindowShape(1024, 768);
+
+	camPointer = &cam;
+
 	cam.setDistance(10);
 	cam.setNearClip(.1);
 	cam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	ofSetVerticalSync(true);
-	cam.disableMouseInput();
+	cam.enableMouseInput();
+	cam.setTarget(ship.pos);
+
+	// TODO: Change to appear looking out of window when model updated
+	topCam.setDistance(10);
+	topCam.setNearClip(.1);
+	topCam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
+	topCam.enableMouseInput();
+	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
+	topCam.lookAt(ship.pos);
+
 	ofEnableSmoothing();
 	ofEnableDepthTest();
 
@@ -44,13 +57,13 @@ void ofApp::setup(){
 
 	// keyLight.setup();
 	// keyLight.enable();
-	// keyLight.setAreaLight(1, 1);
+	// keyLight.setAreaLight(10, 10);
 	// keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
 	// keyLight.setDiffuseColor(ofFloatColor(0.1, 0.1, 0.1));
 	// keyLight.setSpecularColor(ofFloatColor(0.1, 0.1, 0.1));
 
-	// keyLight.setPosition(glm::vec3(0.0, 20, 0.0));
-	// keyLight.tilt(60); // Rotate the light around the X-axis
+	// keyLight.setPosition(glm::vec3(0.0, 1000, 0.0));
+	// keyLight.tilt(90);
 
 
 	// create sliders for testing
@@ -63,14 +76,7 @@ void ofApp::setup(){
 	//  Create Octree for testing.
 	//
 	
-	int t1 = ofGetElapsedTimeMillis();
 	octree.create(mars.getMesh(0), 20);
-	int t2 = ofGetElapsedTimeMillis();
-	cout << "Time to build the tree: " << t2 - t1 << endl;
-	
-	cout << "Number of Verts: " << mars.getMesh(0).getNumVertices() << endl;
-
-	testBox = Box(Vector3(3, 3, 0), Vector3(5, 5, 2));
 
 	ship.loadModel();
 
@@ -82,17 +88,10 @@ void ofApp::setup(){
 		cout << "Particle Texture File: images/dot.png not found" << endl;
 		ofExit();
 	}
-	emitter.setPosition(ofVec3f(0, 0, 0));
-	emitter.setVelocity(ofVec3f(0, -10, 0));
-	emitter.setOneShot(true);
-	emitter.setEmitterType(DirectionalEmitter);
-	emitter.setParticleRadius(100);
-	emitter.setLifespanRange(ofVec2f(3.0, 5.0));
-	emitter.setMass(1);
-	emitter.setDamping(0.99);
-	emitter.setGroupSize(1);
 
-	ship.pos = glm::vec3(0.0, 10, 0.0);
+	initEmitters();
+
+	ship.pos = glm::vec3(0.0, 50, 0.0);
 
 	// load the shader
 	//
@@ -125,37 +124,24 @@ void ofApp::loadVbo() {
 // incrementally update scene (animation)
 //
 void ofApp::update() {
-	if (collisionResolution) {
-		glm::vec3 pos = lander.getPosition();
-		pos += glm::vec3(0.0, 0.1, 0.0);
-		lander.setPosition(pos.x, pos.y, pos.z);
-
-		colBoxList.clear();
-		ofVec3f min = lander.getSceneMin() + lander.getPosition();
-		ofVec3f max = lander.getSceneMax() + lander.getPosition();
-		Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
-		octree.intersect(bounds, octree.root, colBoxList);
-
-		if (colBoxList.size() <= 10)
-			collisionResolution = false;
-	}	
-
 	if (keymap[OF_KEY_UP])  {
-		emitter.sys->reset();
-		emitter.start();
-		ship.forces += 2 * ship.headingY();
+		if (ofGetFrameNum() % 5 == 0) {
+			emitter.sys->reset();
+			emitter.start();
+    }
+		ship.forces += 3 * ship.headingY();
 	}
-	if (keymap['a'] || keymap['A']) ship.forces += -10 * ship.headingX();
-	if (keymap['d'] || keymap['D']) ship.forces += 10 * ship.headingX();
-	if (keymap['s'] || keymap['S']) ship.forces += 10 * ship.headingZ();
-	if (keymap['w'] || keymap['W']) ship.forces += -10 * ship.headingZ();	
+	if (keymap['a'] || keymap['A']) ship.forces += -5 * ship.headingX();
+	if (keymap['d'] || keymap['D']) ship.forces += 5 * ship.headingX();
+	if (keymap['s'] || keymap['S']) ship.forces += 5 * ship.headingZ();
+	if (keymap['w'] || keymap['W']) ship.forces += -5 * ship.headingZ();	
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
-
 	if (colBoxList.size() < 10) {
-		ship.forces += glm::vec3(0.0, -1.0, 0.0); // Gravity Force
+		ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 	} else if (!keymap[OF_KEY_UP]){
+		// TODO: Fix clipping into ground when up arrow held just before crash
 		if (ship.velocity.length() > 5.0f) cout << "CRASH" << endl;
 		ship.landedLogic();
 	}
@@ -167,6 +153,12 @@ void ofApp::update() {
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
 	// cout << ship.calculateAltitude(octree) << endl;
+
+	// cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
+	cam.setTarget(ship.pos);
+
+	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
+	topCam.lookAt(ship.pos);
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -178,7 +170,7 @@ void ofApp::draw() {
 	glDepthMask(true);
 	
 	
-	cam.begin();
+	camPointer->begin();
 
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
@@ -194,6 +186,8 @@ void ofApp::draw() {
 	for (int i = 0; i < colBoxList.size(); i++) {
 		Octree::drawBox(colBoxList[i]);
 	}
+
+	// keyLight.draw();
 	
 	// Game ship draw code ends here
 
@@ -213,31 +207,18 @@ void ofApp::draw() {
 	}
 
 	ofPopMatrix();
-	cam.end();
+	camPointer->end();
 
 	drawParticles();
-
-
 }
 
 void ofApp::drawParticles(){
 
 	loadVbo();
 
-	// draw a grid
-	//
-	cam.begin();
-	ofPushMatrix();
-	ofRotateDeg(90, 0, 0, 1);
-	ofSetLineWidth(1);
 	ofSetColor(ofColor::dimGrey);
-	ofDrawGridPlane();
-	ofPopMatrix();
-	cam.end();
-
 	glDepthMask(GL_FALSE);
 
-	// ofSetColor(255, 100, 90);
 
 	// this makes everything look glowy :)
 	//
@@ -249,7 +230,7 @@ void ofApp::drawParticles(){
 	// begin drawing in the camera
 	//
 	shader.begin();
-	cam.begin();
+	camPointer->begin();
 
 	// draw particle emitter here..
 	//
@@ -260,7 +241,7 @@ void ofApp::drawParticles(){
 
 	//  end drawing in the camera
 	// 
-	cam.end();
+	camPointer->end();
 	shader.end();
 
 	ofDisablePointSprites();
@@ -273,14 +254,18 @@ void ofApp::drawParticles(){
 	glDepthMask(GL_TRUE);
 }
 
-
 void ofApp::keyPressed(int key) {
 
 	switch (key) {
 	case 'C':
 	case 'c':
-		if (cam.getMouseInputEnabled()) cam.disableMouseInput();
-		else cam.enableMouseInput();
+		if (cameraSelector == 1) {
+			camPointer = &topCam;
+			cameraSelector *= -1;
+		} else {
+			camPointer = &cam;
+			cameraSelector *= -1;
+		}
 		break;
 	case 'O':
 	case 'o':
@@ -327,7 +312,6 @@ void ofApp::keyReleased(int key) {
 	}
 	keymap[key] = false;
 }
-
 
 
 //--------------------------------------------------------------
@@ -430,6 +414,25 @@ void ofApp::initLightingAndMaterials() {
 	// glEnable(GL_LIGHT1);
 	glShadeModel(GL_SMOOTH);
 } 
+
+void ofApp::initEmitters() {
+	emitter.setPosition(ofVec3f(0, 0, 0));
+	emitter.setVelocity(ofVec3f(0, -15, 0));
+	emitter.setOneShot(true);
+	emitter.setEmitterType(DirectionalEmitter);
+	emitter.setParticleRadius(10);
+	emitter.setLifespanRange(ofVec2f(4.0, 5.0));
+	emitter.setMass(0.1);
+	emitter.setDamping(0.97);
+	emitter.setGroupSize(1);
+
+	turbForce = new TurbulenceForce(ofVec3f(-2.5, 0.0, -2.5), ofVec3f(2.5, 0.0, 2.5));
+	emitter.sys->addForce(turbForce);
+}
+
+void ofApp::initThreePointLighting() {
+	
+}
 
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 
