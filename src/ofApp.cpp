@@ -85,13 +85,18 @@ void ofApp::setup(){
 	// load textures
 	//
 	if (!ofLoadImage(particleTex, "images/smoke.png")) {
-		cout << "Particle Texture File: images/dot.png not found" << endl;
+		cout << "Particle Texture File: images/smoke.png not found" << endl;
+		ofExit();
+	}
+
+	if (!ofLoadImage(explosionTex, "images/explosion.png")) {
+		cout << "Explosion Texture File: images/explosion.png not found" << endl;
 		ofExit();
 	}
 
 	initEmitters();
 
-	ship.pos = glm::vec3(0.0, 50, 0.0);
+	ship.pos = glm::vec3(0.0, 10, 0.0);
 
 	// load the shader
 	//
@@ -119,6 +124,23 @@ void ofApp::loadVbo() {
 	vbo.setVertexData(&points[0], total, GL_STATIC_DRAW);
 	vbo.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
+
+void ofApp::loadVbo2() {
+	if (explosionEmitter.sys->particles.size() < 1) return;
+
+	vector<ofVec3f> sizes; 
+	vector<ofVec3f> points;
+	for (int i = 0; i < explosionEmitter.sys->particles.size(); i++) {
+		points.push_back(explosionEmitter.sys->particles[i].position);
+		sizes.push_back(ofVec3f(100.0));
+	}
+	// upload the data to the vbo
+	//
+	int total = (int)points.size();
+	vbo2.clear();
+	vbo2.setVertexData(&points[0], total, GL_STATIC_DRAW);
+	vbo2.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
+}
  
 //--------------------------------------------------------------
 // incrementally update scene (animation)
@@ -142,7 +164,12 @@ void ofApp::update() {
 		ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 	} else if (!keymap[OF_KEY_UP]){
 		// TODO: Fix clipping into ground when up arrow held just before crash
-		if (ship.velocity.length() > 5.0f) cout << "CRASH" << endl;
+		if (ship.velocity.length() > 5.0f) {
+			cout << "CRASH" << endl;
+			shipExplode = true;
+			explosionEmitter.sys->reset();
+			explosionEmitter.start();
+		}
 		ship.landedLogic();
 	}
 
@@ -152,9 +179,12 @@ void ofApp::update() {
 	ship.integrate();
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
+
+	explosionEmitter.setPosition(ship.pos);
+	explosionEmitter.update();
+
 	// cout << ship.calculateAltitude(octree) << endl;
 
-	// cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
 	cam.setTarget(ship.pos);
 
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
@@ -215,6 +245,7 @@ void ofApp::draw() {
 void ofApp::drawParticles(){
 
 	loadVbo();
+	loadVbo2();
 
 	ofSetColor(ofColor::dimGrey);
 	glDepthMask(GL_FALSE);
@@ -238,6 +269,10 @@ void ofApp::drawParticles(){
 	particleTex.bind();
 	vbo.draw(GL_POINTS, 0, (int)emitter.sys->particles.size());
 	particleTex.unbind();
+
+	explosionTex.bind();
+	vbo2.draw(GL_POINTS, 0, (int)explosionEmitter.sys->particles.size());
+	explosionTex.unbind();
 
 	//  end drawing in the camera
 	// 
@@ -272,9 +307,8 @@ void ofApp::keyPressed(int key) {
 		bDisplayOctree = !bDisplayOctree;
 		break;
 	case ' ':
-		cout << "Emitter" << endl;
-		emitter.sys->reset();
-		emitter.start();
+		explosionEmitter.sys->reset();
+		explosionEmitter.start();
 		break;
 	default:
 		break;
@@ -428,6 +462,25 @@ void ofApp::initEmitters() {
 
 	turbForce = new TurbulenceForce(ofVec3f(-2.5, 0.0, -2.5), ofVec3f(2.5, 0.0, 2.5));
 	emitter.sys->addForce(turbForce);
+
+	explosionEmitter.setPosition(ofVec3f(0, 0, 0));
+	explosionEmitter.setVelocity(ofVec3f(0, 10, 0));
+	explosionEmitter.setOneShot(true);
+	explosionEmitter.setEmitterType(RadialEmitter);
+	explosionEmitter.setParticleRadius(10);
+	explosionEmitter.setLifespanRange(ofVec2f(15.0, 20.0));
+	explosionEmitter.setMass(0.1);
+	explosionEmitter.setDamping(0.97);
+	explosionEmitter.setGroupSize(1000);
+
+	gravityForce = new GravityForce(ofVec3f(0, -2.0, 0));
+	radialForce = new ImpulseRadialForce(100);
+
+	explosionEmitter.sys->addForce(turbForce);
+	explosionEmitter.sys->addForce(gravityForce);
+	explosionEmitter.sys->addForce(radialForce);
+
+
 }
 
 void ofApp::initThreePointLighting() {
