@@ -3,7 +3,7 @@
 //
 //  Kevin M. Smith
 //
-//  Octree Test - startup scene
+//
 // 
 //
 //  Student Name:   Giovanni Tran, Angela Yang
@@ -75,14 +75,12 @@ void ofApp::setup(){
 	initThreePointLighting();
 
 	// create sliders for testing
-	//
 	gui.setup();
 	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
 	gui.add(bTimingInfo.setup("Timing Info", true));
 	bHide = false;
 
 	//  Create Octree for testing.
-	//
 	
 	octree.create(mars.getMesh(0), 20);
 
@@ -110,6 +108,8 @@ void ofApp::setup(){
 #endif
 }
 
+
+
 // Emitter rendering buffer
 void ofApp::loadVbo() {
 	if (emitter.sys->particles.size() < 1) return;
@@ -135,6 +135,8 @@ void ofApp::resetGame(){
 	fadeAlpha = 0.0f;
 	fadeStartTime = 0.0f;
 	bGameOver = false;
+
+	
 
 	titleCamAngle = 0.0f;
 
@@ -244,7 +246,8 @@ void ofApp::update() {
 	}
 
 	if(bGameOver){
-		
+		toggleAltitude = false;
+		toggleLight = false;
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
 		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
 		backgroundFadingOut = true;
