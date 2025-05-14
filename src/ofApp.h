@@ -47,7 +47,7 @@ class ofApp : public ofBaseApp{
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
 		ofxAssimpModelLoader mars, lander;
-		ofLight keyLight, fillLight, ambLight;
+		ofLight keyLight, fillLight, ambLight, rimLight, spaceLight;
 		Box boundingBox, landerBounds;
 		vector<Box> colBoxList;
 		bool bLanderSelected = false;
@@ -55,6 +55,7 @@ class ofApp : public ofBaseApp{
 		TreeNode selectedNode;
 		glm::vec3 mouseDownPos, mouseLastPos;
 		bool bInDrag = false;
+		bool toggleLight = false;
 
 		Lander ship;
 
