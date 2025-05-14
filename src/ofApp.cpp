@@ -47,11 +47,21 @@ void ofApp::setup(){
 	ofEnableDepthTest();
 
 	rocket.load("sounds/rocket.mp3");
+	titleSong.load("sounds/title2.mp3");
+	gameOverSound.load("sounds/gameover.mp3");
+	backgroundMusic.load("sounds/background.mp3");
+	backgroundMusic.setLoop(true);
+	backgroundMusic.setVolume(0.0f);
+
+	titleSong.setLoop(true);
+	titleSong.play();
+
+	titleFont.load("fonts/titleFont.otf", 60);
+	
 
 	backgroundImage.load("images/background.jpg");
 
 	// setup rudimentary lighting 
-	//
 	//initLightingAndMaterials();
 
 	cout << "Moon Test Data: " << endl;
@@ -161,6 +171,10 @@ void ofApp::resetGame(){
 	bGameOver = false;
 
 	titleCamAngle = 0.0f;
+
+	titleSong.setVolume(1.0f);
+	titleSongVolume = 1.0f;
+	titleSong.play();
 	
 
 	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
@@ -187,6 +201,42 @@ void ofApp::update() {
     	camPointer->lookAt(ship.pos);
 		return;
 	}
+
+
+	//music logic
+	if (titleFadingOut) {
+        	titleSongVolume -= fadeSpeed;
+        	if (titleSongVolume <= 0.0f) {
+            	titleSongVolume = 0.0f;
+            	titleFadingOut = false;
+            titleSong.stop();
+			backgroundMusic.play();
+			backgroundFadingIn = true;
+        }
+        	titleSong.setVolume(titleSongVolume);
+    }
+
+	if(backgroundFadingIn){
+		backgroundMusicVolume += fadeSpeedBG;
+		if (backgroundMusicVolume >= 0.5f) {
+			backgroundMusicVolume = 0.5f;
+			backgroundFadingIn = false;
+		}
+		backgroundMusic.setVolume(backgroundMusicVolume);
+	}
+
+	if(backgroundFadingOut){
+		backgroundMusicVolume -= fadeSpeedBG;
+		if (backgroundMusicVolume <= 0.0f) {
+			backgroundMusicVolume = 0.0f;
+			backgroundFadingOut = false;
+			backgroundMusic.stop();
+		}
+		backgroundMusic.setVolume(backgroundMusicVolume);
+	}
+
+	//end of music logic
+	
 	
 	if (keymap[OF_KEY_UP])  {
 		
@@ -219,15 +269,22 @@ void ofApp::update() {
 			bGameOver = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
+
+			if (!gameOverSound.isPlaying()) {
+    			gameOverSound.play();
+			}
 		} 
 		ship.landedLogic();
 	}
 
 	if(bGameOver){
+		
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
 		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
+		backgroundFadingOut = true;
 
 		if(elapsedTime > gameOverDelay){
+			
 			resetGame();
 		}
 		return;
@@ -326,7 +383,8 @@ void ofApp::draw() {
 	if (bTitleScreen) {
     	ofSetColor(ofColor::white);
     	ofDrawBitmapString("Press ENTER to Start", ofGetWidth() / 2 - 80, ofGetHeight() - 100);
-		ofDrawBitmapString("Castronauts: Moon Landing", ofGetWidth()/2 - 80, ofGetHeight()/2 - 200);
+		titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 290, ofGetHeight() / 2 -200);
+		ofDrawBitmapString("Crash Landing", ofGetWidth() / 2 - 55, ofGetHeight() /2 - 180);
     	return; 	
 	}
 
@@ -399,6 +457,8 @@ void ofApp::keyPressed(int key) {
 	case OF_KEY_RETURN:
 		if(bTitleScreen){
 			bTitleScreen = false;
+			titleFadingOut = true;
+			
 		}
 		break;
 	case '1':

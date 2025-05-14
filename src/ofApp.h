@@ -57,6 +57,8 @@ class ofApp : public ofBaseApp{
 		glm::vec3 mouseDownPos, mouseLastPos;
 		ofImage backgroundImage;
 
+		ofTrueTypeFont titleFont;
+
 
 		bool bInDrag = false;
 		bool toggleLight = false;
@@ -68,11 +70,11 @@ class ofApp : public ofBaseApp{
 		bool bGameOver = false;
 		float fadeStartTime = 0.0f;
 		float fadeDuration = 2.0f;
-		float gameOverDelay = 4.0f;
+		float gameOverDelay = 3.0f;
 
 		//sound bools and floats
 		
-		ofSoundPlayer rocket, titleSong, backgroundMusic;
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound;
 
 		bool titleFadingOut = false;
 		float titleSongVolume = 1.0f;
