@@ -55,6 +55,13 @@ class ofApp : public ofBaseApp{
 		Octree octree;
 		TreeNode selectedNode;
 		glm::vec3 mouseDownPos, mouseLastPos;
+		ofImage backgroundImage;
+
+		ofTrueTypeFont titleFont;
+		ofTrueTypeFont subtitleFont;
+		ofTrueTypeFont gameOverFont;
+
+
 		bool bInDrag = false;
 		bool toggleLight = false;
 		string altitude;
@@ -65,7 +72,23 @@ class ofApp : public ofBaseApp{
 		bool bGameOver = false;
 		float fadeStartTime = 0.0f;
 		float fadeDuration = 2.0f;
-		float gameOverDelay = 4.0f;
+		float gameOverDelay = 3.0f;
+		bool toggleAltitude = false;
+
+		//sound bools and floats
+		
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound;
+
+		bool titleFadingOut = false;
+		float titleSongVolume = 1.0f;
+		float backgroundMusicVolume = 0.0f;
+		float backgroundFadingIn = false;
+		float backgroundFadingOut = false;
+
+
+		float fadeSpeed = 0.1f;
+		float fadeSpeedBG = 0.05f;
+
 
 		Lander ship;
 
@@ -78,7 +101,8 @@ class ofApp : public ofBaseApp{
 
 		ofTexture  particleTex;
 
-		ofSoundPlayer rocket;
+		
+		
 
 		// shaders
 		//

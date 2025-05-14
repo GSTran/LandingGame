@@ -47,9 +47,23 @@ void ofApp::setup(){
 	ofEnableDepthTest();
 
 	rocket.load("sounds/rocket.mp3");
+	titleSong.load("sounds/title2.mp3");
+	gameOverSound.load("sounds/gameover.mp3");
+	backgroundMusic.load("sounds/background.mp3");
+	backgroundMusic.setLoop(true);
+	backgroundMusic.setVolume(0.0f);
+
+	titleSong.setLoop(true);
+	titleSong.play();
+
+	titleFont.load("fonts/titleFont.otf", 60, true, true, true);
+	subtitleFont.load("fonts/subtitle.ttf", 20);
+	gameOverFont.load("fonts/subtitle.ttf", 40);
+	
+
+	backgroundImage.load("images/background.jpg");
 
 	// setup rudimentary lighting 
-	//
 	//initLightingAndMaterials();
 
 	cout << "Moon Test Data: " << endl;
@@ -57,44 +71,8 @@ void ofApp::setup(){
 
 	mars.setScaleNormalization(false);
 
-	keyLight.setup();
-	keyLight.enable();
-	keyLight.setDirectional();
-	keyLight.setAreaLight(1000, 1000);
-	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
-	keyLight.setDiffuseColor(ofColor::white);
-	keyLight.setPosition(glm::vec3(500, 500, 0.0));
-
-	fillLight.setup();
-	fillLight.enable();
-	fillLight.setDirectional();
-	fillLight.setAmbientColor(ofFloatColor(0.05, 0.05, 0.05));
-	fillLight.setDiffuseColor(ofColor::orange);               
-	fillLight.setPosition(glm::vec3(-400, 300, 400));          
-	fillLight.lookAt(glm::vec3(0, 0, 0));   
 	
-	rimLight.setup();
-	rimLight.enable();
-	rimLight.setDirectional();
-	rimLight.setDiffuseColor(ofFloatColor(0.2, 0.2, 1.0));
-	rimLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.3));   
-	rimLight.setPosition(glm::vec3(400, 300, -400));         
-	rimLight.lookAt(glm::vec3(0, 0, 0));
-
-	ambLight.setup();
-	ambLight.enable();
-	ambLight.setDirectional();
-	ambLight.setDiffuseColor(ofColor::white); 
-	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));     
-	ambLight.setPosition(glm::vec3(300, 300, 500));         
-	ambLight.lookAt(glm::vec3(0, 0, 0));
-
-	spaceLight.setup();
-	spaceLight.setSpotlight();
-	spaceLight.setDiffuseColor(ofColor::cyan);
-	spaceLight.setSpotlightCutOff(45);
-	spaceLight.setAttenuation(1.0, 0.01, 0.01);
-
+	initThreePointLighting();
 
 	// create sliders for testing
 	//
@@ -159,6 +137,10 @@ void ofApp::resetGame(){
 	bGameOver = false;
 
 	titleCamAngle = 0.0f;
+
+	titleSong.setVolume(1.0f);
+	titleSongVolume = 1.0f;
+	titleSong.play();
 	
 
 	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
@@ -185,6 +167,42 @@ void ofApp::update() {
     	camPointer->lookAt(ship.pos);
 		return;
 	}
+
+
+	//music logic
+	if (titleFadingOut) {
+        	titleSongVolume -= fadeSpeed;
+        	if (titleSongVolume <= 0.0f) {
+            	titleSongVolume = 0.0f;
+            	titleFadingOut = false;
+            titleSong.stop();
+			backgroundMusic.play();
+			backgroundFadingIn = true;
+        }
+        	titleSong.setVolume(titleSongVolume);
+    }
+
+	if(backgroundFadingIn){
+		backgroundMusicVolume += fadeSpeedBG;
+		if (backgroundMusicVolume >= 0.5f) {
+			backgroundMusicVolume = 0.5f;
+			backgroundFadingIn = false;
+		}
+		backgroundMusic.setVolume(backgroundMusicVolume);
+	}
+
+	if(backgroundFadingOut){
+		backgroundMusicVolume -= fadeSpeedBG;
+		if (backgroundMusicVolume <= 0.0f) {
+			backgroundMusicVolume = 0.0f;
+			backgroundFadingOut = false;
+			backgroundMusic.stop();
+		}
+		backgroundMusic.setVolume(backgroundMusicVolume);
+	}
+
+	//end of music logic
+	
 	
 	if (keymap[OF_KEY_UP])  {
 		
@@ -217,15 +235,22 @@ void ofApp::update() {
 			bGameOver = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
+
+			if (!gameOverSound.isPlaying()) {
+    			gameOverSound.play();
+			}
 		} 
 		ship.landedLogic();
 	}
 
 	if(bGameOver){
+		
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
 		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
+		backgroundFadingOut = true;
 
 		if(elapsedTime > gameOverDelay){
+			
 			resetGame();
 		}
 		return;
@@ -258,7 +283,16 @@ void ofApp::update() {
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofBackground(ofColor::black);
+
+	//background
+	ofPushMatrix();
+	ofDisableDepthTest();
+	ofSetColor(ofColor::white);
+	ofDisableLighting();
+	backgroundImage.draw(-500, -500);
+	ofEnableDepthTest();
+	ofPopMatrix();
+	
 	camPointer->begin();
 
 	ofPushMatrix();
@@ -273,6 +307,7 @@ void ofApp::draw() {
 	//
 	ofSetColor(ofColor::lightGreen);
 	for (int i = 0; i < colBoxList.size(); i++) {
+		ofNoFill();
 		Octree::drawBox(colBoxList[i]);
 	}
 
@@ -314,12 +349,28 @@ void ofApp::draw() {
 	ofPopMatrix();
 	camPointer->end();
 
+	
+	//draw Text for Title Screen
 	if (bTitleScreen) {
+		
+		float time = ofGetElapsedTimef();
     	ofSetColor(ofColor::white);
-    	ofDrawBitmapString("Press ENTER to Start", ofGetWidth() / 2 - 80, ofGetHeight() - 100);
-		ofDrawBitmapString("Castronauts: Moon Landing", ofGetWidth()/2 - 80, ofGetHeight()/2 - 200);
+		//blinking text effect 
+		if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+		
+		ofNoFill();
+		ofSetColor(255, 165, 0);
+		titleFont.drawStringAsShapes("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -240);
+		
+		ofFill();
+		ofSetColor(114, 204, 242);
+		titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -230);
+
+		ofSetColor(ofColor::white);
+		subtitleFont.drawString("Crash       Landing", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 180);
     	return; 	
 	}
+	//end of Title Screen
 
 	glDepthMask(false);
 	if (!bHide) gui.draw();
@@ -327,13 +378,17 @@ void ofApp::draw() {
 	
 	drawParticles();
 
+
+	if(toggleAltitude){
 	string frameRate;
 	frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
 	ofSetColor(ofColor::white);
 	ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
 	ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
+	}
 
 	if(bFadingOut){
+		ofFill();
 		ofSetColor(0, 0, 0, fadeAlpha);
 		ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
@@ -390,10 +445,15 @@ void ofApp::keyPressed(int key) {
 	case OF_KEY_RETURN:
 		if(bTitleScreen){
 			bTitleScreen = false;
+			titleFadingOut = true;
+			
 		}
 		break;
 	case '1':
 		toggleLight = !toggleLight;
+		break;
+	case '2':
+		toggleAltitude = !toggleAltitude;
 		break;
 	case 'C':
 	case 'c':
@@ -573,6 +633,43 @@ void ofApp::initEmitters() {
 }
 
 void ofApp::initThreePointLighting() {
+	keyLight.setup();
+	keyLight.enable();
+	keyLight.setDirectional();
+	keyLight.setAreaLight(1000, 1000);
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	keyLight.setDiffuseColor(ofColor::white);
+	keyLight.setPosition(glm::vec3(500, 500, 0.0));
+
+	fillLight.setup();
+	fillLight.enable();
+	fillLight.setDirectional();
+	fillLight.setAmbientColor(ofFloatColor(0.05, 0.05, 0.05));
+	fillLight.setDiffuseColor(ofColor::orange);               
+	fillLight.setPosition(glm::vec3(-400, 300, 400));          
+	fillLight.lookAt(glm::vec3(0, 0, 0));   
+	
+	rimLight.setup();
+	rimLight.enable();
+	rimLight.setDirectional();
+	rimLight.setDiffuseColor(ofFloatColor(0.2, 0.2, 1.0));
+	rimLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.3));   
+	rimLight.setPosition(glm::vec3(400, 300, -400));         
+	rimLight.lookAt(glm::vec3(0, 0, 0));
+
+	ambLight.setup();
+	ambLight.enable();
+	ambLight.setDirectional();
+	ambLight.setDiffuseColor(ofColor::white); 
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));     
+	ambLight.setPosition(glm::vec3(300, 300, 500));         
+	ambLight.lookAt(glm::vec3(0, 0, 0));
+
+	spaceLight.setup();
+	spaceLight.setSpotlight();
+	spaceLight.setDiffuseColor(ofColor::cyan);
+	spaceLight.setSpotlightCutOff(45);
+	spaceLight.setAttenuation(1.0, 0.01, 0.01);
 	
 }
 
