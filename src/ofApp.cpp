@@ -48,6 +48,8 @@ void ofApp::setup(){
 
 	rocket.load("sounds/rocket.mp3");
 
+	backgroundImage.load("images/background.jpg");
+
 	// setup rudimentary lighting 
 	//
 	//initLightingAndMaterials();
@@ -258,7 +260,14 @@ void ofApp::update() {
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofBackground(ofColor::black);
+
+	//background
+	ofPushMatrix();
+	ofDisableDepthTest();
+	backgroundImage.draw(-500, -500);
+	ofEnableDepthTest();
+	ofPopMatrix();
+	
 	camPointer->begin();
 
 	ofPushMatrix();

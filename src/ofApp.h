@@ -55,6 +55,9 @@ class ofApp : public ofBaseApp{
 		Octree octree;
 		TreeNode selectedNode;
 		glm::vec3 mouseDownPos, mouseLastPos;
+		ofImage backgroundImage;
+
+
 		bool bInDrag = false;
 		bool toggleLight = false;
 		string altitude;
