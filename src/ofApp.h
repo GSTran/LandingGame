@@ -58,6 +58,8 @@ class ofApp : public ofBaseApp{
 		ofImage backgroundImage;
 
 		ofTrueTypeFont titleFont;
+		ofTrueTypeFont subtitleFont;
+		ofTrueTypeFont gameOverFont;
 
 
 		bool bInDrag = false;
@@ -71,6 +73,7 @@ class ofApp : public ofBaseApp{
 		float fadeStartTime = 0.0f;
 		float fadeDuration = 2.0f;
 		float gameOverDelay = 3.0f;
+		bool toggleAltitude = false;
 
 		//sound bools and floats
 		

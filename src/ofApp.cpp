@@ -56,7 +56,9 @@ void ofApp::setup(){
 	titleSong.setLoop(true);
 	titleSong.play();
 
-	titleFont.load("fonts/titleFont.otf", 60);
+	titleFont.load("fonts/titleFont.otf", 60, true, true, true);
+	subtitleFont.load("fonts/subtitle.ttf", 20);
+	gameOverFont.load("fonts/subtitle.ttf", 40);
 	
 
 	backgroundImage.load("images/background.jpg");
@@ -321,6 +323,8 @@ void ofApp::draw() {
 	//background
 	ofPushMatrix();
 	ofDisableDepthTest();
+	ofSetColor(ofColor::white);
+	ofDisableLighting();
 	backgroundImage.draw(-500, -500);
 	ofEnableDepthTest();
 	ofPopMatrix();
@@ -339,6 +343,7 @@ void ofApp::draw() {
 	//
 	ofSetColor(ofColor::lightGreen);
 	for (int i = 0; i < colBoxList.size(); i++) {
+		ofNoFill();
 		Octree::drawBox(colBoxList[i]);
 	}
 
@@ -380,13 +385,28 @@ void ofApp::draw() {
 	ofPopMatrix();
 	camPointer->end();
 
+	
+	//draw Text for Title Screen
 	if (bTitleScreen) {
+		
+		float time = ofGetElapsedTimef();
     	ofSetColor(ofColor::white);
-    	ofDrawBitmapString("Press ENTER to Start", ofGetWidth() / 2 - 80, ofGetHeight() - 100);
-		titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 290, ofGetHeight() / 2 -200);
-		ofDrawBitmapString("Crash Landing", ofGetWidth() / 2 - 55, ofGetHeight() /2 - 180);
+		//blinking text effect 
+		if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+		
+		ofNoFill();
+		ofSetColor(255, 165, 0);
+		titleFont.drawStringAsShapes("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -240);
+		
+		ofFill();
+		ofSetColor(114, 204, 242);
+		titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -230);
+
+		ofSetColor(ofColor::white);
+		subtitleFont.drawString("Crash       Landing", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 180);
     	return; 	
 	}
+	//end of Title Screen
 
 	glDepthMask(false);
 	if (!bHide) gui.draw();
@@ -394,13 +414,17 @@ void ofApp::draw() {
 	
 	drawParticles();
 
+
+	if(toggleAltitude){
 	string frameRate;
 	frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
 	ofSetColor(ofColor::white);
 	ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
 	ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
+	}
 
 	if(bFadingOut){
+		ofFill();
 		ofSetColor(0, 0, 0, fadeAlpha);
 		ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
@@ -463,6 +487,9 @@ void ofApp::keyPressed(int key) {
 		break;
 	case '1':
 		toggleLight = !toggleLight;
+		break;
+	case '2':
+		toggleAltitude = !toggleAltitude;
 		break;
 	case 'C':
 	case 'c':
