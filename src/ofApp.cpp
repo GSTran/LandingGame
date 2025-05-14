@@ -48,22 +48,54 @@ void ofApp::setup(){
 
 	// setup rudimentary lighting 
 	//
-	initLightingAndMaterials();
+	//initLightingAndMaterials();
 
 	cout << "Moon Test Data: " << endl;
-	mars.loadModel("geo/moon-houdini.obj");
+	mars.loadModel("geo/terrain.obj");
 
 	mars.setScaleNormalization(false);
 
-	// keyLight.setup();
-	// keyLight.enable();
-	// keyLight.setAreaLight(10, 10);
-	// keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
-	// keyLight.setDiffuseColor(ofFloatColor(0.1, 0.1, 0.1));
-	// keyLight.setSpecularColor(ofFloatColor(0.1, 0.1, 0.1));
+	keyLight.setup();
+	keyLight.enable();
+	keyLight.setDirectional();
+	keyLight.setAreaLight(1000, 1000);
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	keyLight.setDiffuseColor(ofColor::white);
+	keyLight.setPosition(glm::vec3(500, 500, 0.0));
 
-	// keyLight.setPosition(glm::vec3(0.0, 1000, 0.0));
-	// keyLight.tilt(90);
+	fillLight.setup();
+	fillLight.enable();
+	fillLight.setDirectional();
+	fillLight.setAmbientColor(ofFloatColor(0.05, 0.05, 0.05));
+	fillLight.setDiffuseColor(ofColor::orange);               
+	fillLight.setPosition(glm::vec3(-400, 300, 400));          
+	fillLight.lookAt(glm::vec3(0, 0, 0));   
+	
+	rimLight.setup();
+	rimLight.enable();
+	rimLight.setDirectional();
+	rimLight.setDiffuseColor(ofFloatColor(0.2, 0.2, 1.0));
+	rimLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.3));   
+	rimLight.setPosition(glm::vec3(400, 300, -400));         
+	rimLight.lookAt(glm::vec3(0, 0, 0));
+
+	ambLight.setup();
+	ambLight.enable();
+	ambLight.setDirectional();
+	ambLight.setDiffuseColor(ofColor::white); 
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));     
+	ambLight.setPosition(glm::vec3(300, 300, 500));         
+	ambLight.lookAt(glm::vec3(0, 0, 0));
+
+
+
+	spaceLight.setup();
+	spaceLight.enable();
+	spaceLight.setSpotlight();
+	spaceLight.setDiffuseColor(ofColor::cyan);
+	spaceLight.setSpotlightCutOff(45);
+	spaceLight.setAttenuation(1.0, 0.01, 0.01);
+
 
 
 	// create sliders for testing
@@ -159,6 +191,17 @@ void ofApp::update() {
 
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
 	topCam.lookAt(ship.pos);
+
+
+	
+	//spaceLights 
+	if(toggleLight){
+		spaceLight.enable();
+		spaceLight.setPosition(ship.pos - glm::vec3(0, 5, 0));
+		spaceLight.lookAt(ship.pos - glm::vec3(0, 6, 0)); 
+	}else{
+		spaceLight.disable();
+	}
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -187,7 +230,22 @@ void ofApp::draw() {
 		Octree::drawBox(colBoxList[i]);
 	}
 
-	// keyLight.draw();
+	//debugging
+	//keyLight.draw();
+	//fillLight.draw();
+	//rimLight.draw();
+	//ambLight.draw();
+
+
+	if(toggleLight){
+	ofPushMatrix();
+	ofTranslate(ship.pos - glm::vec3(0, 4, 0));
+	ofRotateDeg(180, 1, 0, 0);
+	ofSetColor(ofColor::cyan);
+	ofEnableBlendMode(OF_BLENDMODE_ADD);     
+	ofDrawCone(0, 0, 0, 2, 1);
+	ofPopMatrix();
+	}
 	
 	// Game ship draw code ends here
 
@@ -257,6 +315,9 @@ void ofApp::drawParticles(){
 void ofApp::keyPressed(int key) {
 
 	switch (key) {
+	case '1':
+		toggleLight = !toggleLight;
+		break;
 	case 'C':
 	case 'c':
 		if (cameraSelector == 1) {
