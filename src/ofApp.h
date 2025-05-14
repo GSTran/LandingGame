@@ -70,6 +70,21 @@ class ofApp : public ofBaseApp{
 		float fadeDuration = 2.0f;
 		float gameOverDelay = 4.0f;
 
+		//sound bools and floats
+		
+		ofSoundPlayer rocket, titleSong, backgroundMusic;
+
+		bool titleFadingOut = false;
+		float titleSongVolume = 1.0f;
+		float backgroundMusicVolume = 0.0f;
+		float backgroundFadingIn = false;
+		float backgroundFadingOut = false;
+
+
+		float fadeSpeed = 0.1f;
+		float fadeSpeedBG = 0.05f;
+
+
 		Lander ship;
 
 		ParticleEmitter emitter;
@@ -81,7 +96,8 @@ class ofApp : public ofBaseApp{
 
 		ofTexture  particleTex;
 
-		ofSoundPlayer rocket;
+		
+		
 
 		// shaders
 		//
