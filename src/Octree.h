@@ -20,6 +20,13 @@ public:
 	Box box;
 	vector<int> points;
 	vector<TreeNode> children;
+
+	TreeNode(){
+
+	}
+	 TreeNode(const Box &b, const std::vector<int> &pts)
+      : box(b), points(pts)
+    { }
 };
 
 class Octree {

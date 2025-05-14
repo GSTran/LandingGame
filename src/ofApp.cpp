@@ -6,8 +6,8 @@
 //  Octree Test - startup scene
 // 
 //
-//  Student Name:   < Your Name goes Here >
-//  Date: <date of last version>
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 
 
 #include "ofApp.h"
@@ -184,7 +184,7 @@ void ofApp::update() {
 	ship.integrate();
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
-	// cout << ship.calculateAltitude(octree) << endl;
+	altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
 
 	// cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
 	cam.setTarget(ship.pos);
@@ -268,6 +268,17 @@ void ofApp::draw() {
 	camPointer->end();
 
 	drawParticles();
+
+	string frameRate;
+	frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
+	ofSetColor(ofColor::white);
+	ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
+
+	
+	
+	ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
+
+
 }
 
 void ofApp::drawParticles(){
