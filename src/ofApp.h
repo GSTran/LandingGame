@@ -56,6 +56,7 @@ class ofApp : public ofBaseApp{
 		glm::vec3 mouseDownPos, mouseLastPos;
 		bool bInDrag = false;
 		bool toggleLight = false;
+		string altitude;
 
 		Lander ship;
 
@@ -67,6 +68,8 @@ class ofApp : public ofBaseApp{
 		CyclicForce *cyclicForce;
 
 		ofTexture  particleTex;
+
+		ofSoundPlayer rocket;
 
 		// shaders
 		//

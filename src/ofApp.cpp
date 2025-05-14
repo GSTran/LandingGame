@@ -46,6 +46,8 @@ void ofApp::setup(){
 	ofEnableSmoothing();
 	ofEnableDepthTest();
 
+	rocket.load("sounds/rocket.mp3");
+
 	// setup rudimentary lighting 
 	//
 	//initLightingAndMaterials();
@@ -157,11 +159,19 @@ void ofApp::loadVbo() {
 //
 void ofApp::update() {
 	if (keymap[OF_KEY_UP])  {
+		
 		if (ofGetFrameNum() % 5 == 0) {
 			emitter.sys->reset();
 			emitter.start();
+			
     }
 		ship.forces += 3 * ship.headingY();
+		if (!rocket.isPlaying()) {
+    		rocket.setLoop(true);
+			rocket.setSpeed(2.0);
+    		rocket.setVolume(0.5);
+    		rocket.play();
+		}
 	}
 	if (keymap['a'] || keymap['A']) ship.forces += -5 * ship.headingX();
 	if (keymap['d'] || keymap['D']) ship.forces += 5 * ship.headingX();
@@ -347,6 +357,7 @@ void ofApp::keyPressed(int key) {
 		cout << "Emitter" << endl;
 		emitter.sys->reset();
 		emitter.start();
+		
 		break;
 	default:
 		break;
@@ -378,6 +389,9 @@ void ofApp::keyReleased(int key) {
 		bCtrlKeyDown = false;
 		break;
 	case OF_KEY_SHIFT:
+		break;
+	case OF_KEY_UP:
+		rocket.stop();
 		break;
 	default:
 		break;
