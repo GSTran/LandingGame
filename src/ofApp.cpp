@@ -6,8 +6,8 @@
 //  Octree Test - startup scene
 // 
 //
-//  Student Name:   < Your Name goes Here >
-//  Date: <date of last version>
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 
 
 #include "ofApp.h"
@@ -45,6 +45,8 @@ void ofApp::setup(){
 
 	ofEnableSmoothing();
 	ofEnableDepthTest();
+
+	rocket.load("sounds/rocket.mp3");
 
 	// setup rudimentary lighting 
 	//
@@ -87,15 +89,11 @@ void ofApp::setup(){
 	ambLight.setPosition(glm::vec3(300, 300, 500));         
 	ambLight.lookAt(glm::vec3(0, 0, 0));
 
-
-
 	spaceLight.setup();
-	spaceLight.enable();
 	spaceLight.setSpotlight();
 	spaceLight.setDiffuseColor(ofColor::cyan);
 	spaceLight.setSpotlightCutOff(45);
 	spaceLight.setAttenuation(1.0, 0.01, 0.01);
-
 
 
 	// create sliders for testing
@@ -123,7 +121,7 @@ void ofApp::setup(){
 
 	initEmitters();
 
-	ship.pos = glm::vec3(0.0, 50, 0.0);
+	ship.pos = glm::vec3(0.0, 2.0, 0.0);
 
 	// load the shader
 	//
@@ -152,16 +150,56 @@ void ofApp::loadVbo() {
 	vbo.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
  
+
+void ofApp::resetGame(){
+	bFadingOut = false;
+	bTitleScreen = true;
+	fadeAlpha = 0.0f;
+	fadeStartTime = 0.0f;
+	bGameOver = false;
+
+	titleCamAngle = 0.0f;
+	
+
+	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
+	ship.pos = glm::vec3(0.0, 2.0, 0.0);
+	ship.forces = glm::vec3(0.0, 0.0, 0.0);
+	ship.rotForce = 0.0;
+	emitter.sys->reset();
+
+	camPointer = &cam;
+}
 //--------------------------------------------------------------
 // incrementally update scene (animation)
 //
 void ofApp::update() {
+
+	//menu screen
+	//rotate camera around the ship until the user presses enter
+	if(bTitleScreen){
+		float radius = 40.0f;
+		titleCamAngle += 0.1f;
+		float rad = glm::radians(titleCamAngle);
+		glm::vec3 camPos = ship.pos + glm::vec3(cos(rad) * radius, 10, sin(rad) * radius);
+    	camPointer->setPosition(camPos);
+    	camPointer->lookAt(ship.pos);
+		return;
+	}
+	
 	if (keymap[OF_KEY_UP])  {
+		
 		if (ofGetFrameNum() % 5 == 0) {
 			emitter.sys->reset();
 			emitter.start();
+			
     }
 		ship.forces += 3 * ship.headingY();
+		if (!rocket.isPlaying()) {
+    		rocket.setLoop(true);
+			rocket.setSpeed(2.0);
+    		rocket.setVolume(0.5);
+    		rocket.play();
+		}
 	}
 	if (keymap['a'] || keymap['A']) ship.forces += -5 * ship.headingX();
 	if (keymap['d'] || keymap['D']) ship.forces += 5 * ship.headingX();
@@ -174,8 +212,23 @@ void ofApp::update() {
 		ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 	} else if (!keymap[OF_KEY_UP]){
 		// TODO: Fix clipping into ground when up arrow held just before crash
-		if (ship.velocity.length() > 5.0f) cout << "CRASH" << endl;
+		if (ship.velocity.length() > 5.0f){
+			//cout << "CRASH" << endl;
+			bGameOver = true;
+			bFadingOut = true;
+			fadeStartTime = ofGetElapsedTimef();
+		} 
 		ship.landedLogic();
+	}
+
+	if(bGameOver){
+		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
+		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
+
+		if(elapsedTime > gameOverDelay){
+			resetGame();
+		}
+		return;
 	}
 
 	colBoxList.clear();
@@ -184,7 +237,7 @@ void ofApp::update() {
 	ship.integrate();
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
-	// cout << ship.calculateAltitude(octree) << endl;
+	altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
 
 	// cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
 	cam.setTarget(ship.pos);
@@ -205,14 +258,7 @@ void ofApp::update() {
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
-
 	ofBackground(ofColor::black);
-
-	glDepthMask(false);
-	if (!bHide) gui.draw();
-	glDepthMask(true);
-	
-	
 	camPointer->begin();
 
 	ofPushMatrix();
@@ -236,6 +282,7 @@ void ofApp::draw() {
 	//rimLight.draw();
 	//ambLight.draw();
 
+	
 
 	if(toggleLight){
 	ofPushMatrix();
@@ -267,7 +314,32 @@ void ofApp::draw() {
 	ofPopMatrix();
 	camPointer->end();
 
+	if (bTitleScreen) {
+    	ofSetColor(ofColor::white);
+    	ofDrawBitmapString("Press ENTER to Start", ofGetWidth() / 2 - 80, ofGetHeight() - 100);
+		ofDrawBitmapString("Castronauts: Moon Landing", ofGetWidth()/2 - 80, ofGetHeight()/2 - 200);
+    	return; 	
+	}
+
+	glDepthMask(false);
+	if (!bHide) gui.draw();
+	glDepthMask(true);
+	
 	drawParticles();
+
+	string frameRate;
+	frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
+	ofSetColor(ofColor::white);
+	ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
+	ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
+
+	if(bFadingOut){
+		ofSetColor(0, 0, 0, fadeAlpha);
+		ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+
+		ofSetColor(255, 255, 255, fadeAlpha);
+		ofDrawBitmapString("Game Over", ofGetWidth()/2 - 50, ofGetHeight()/2);
+	}
 }
 
 void ofApp::drawParticles(){
@@ -315,6 +387,11 @@ void ofApp::drawParticles(){
 void ofApp::keyPressed(int key) {
 
 	switch (key) {
+	case OF_KEY_RETURN:
+		if(bTitleScreen){
+			bTitleScreen = false;
+		}
+		break;
 	case '1':
 		toggleLight = !toggleLight;
 		break;
@@ -336,6 +413,7 @@ void ofApp::keyPressed(int key) {
 		cout << "Emitter" << endl;
 		emitter.sys->reset();
 		emitter.start();
+		
 		break;
 	default:
 		break;
@@ -367,6 +445,9 @@ void ofApp::keyReleased(int key) {
 		bCtrlKeyDown = false;
 		break;
 	case OF_KEY_SHIFT:
+		break;
+	case OF_KEY_UP:
+		rocket.stop();
 		break;
 	default:
 		break;
