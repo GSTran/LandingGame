@@ -43,6 +43,7 @@ class ofApp : public ofBaseApp{
 		void drawParticles();
 		void initEmitters();
 		void initThreePointLighting();
+		void resetGame();
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
@@ -57,6 +58,14 @@ class ofApp : public ofBaseApp{
 		bool bInDrag = false;
 		bool toggleLight = false;
 		string altitude;
+		bool bTitleScreen = true;
+		float titleCamAngle = 0.0f;
+		bool bFadingOut = false;
+		float fadeAlpha = 0.0f;
+		bool bGameOver = false;
+		float fadeStartTime = 0.0f;
+		float fadeDuration = 2.0f;
+		float gameOverDelay = 4.0f;
 
 		Lander ship;
 
