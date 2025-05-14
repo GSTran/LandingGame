@@ -71,44 +71,8 @@ void ofApp::setup(){
 
 	mars.setScaleNormalization(false);
 
-	keyLight.setup();
-	keyLight.enable();
-	keyLight.setDirectional();
-	keyLight.setAreaLight(1000, 1000);
-	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
-	keyLight.setDiffuseColor(ofColor::white);
-	keyLight.setPosition(glm::vec3(500, 500, 0.0));
-
-	fillLight.setup();
-	fillLight.enable();
-	fillLight.setDirectional();
-	fillLight.setAmbientColor(ofFloatColor(0.05, 0.05, 0.05));
-	fillLight.setDiffuseColor(ofColor::orange);               
-	fillLight.setPosition(glm::vec3(-400, 300, 400));          
-	fillLight.lookAt(glm::vec3(0, 0, 0));   
 	
-	rimLight.setup();
-	rimLight.enable();
-	rimLight.setDirectional();
-	rimLight.setDiffuseColor(ofFloatColor(0.2, 0.2, 1.0));
-	rimLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.3));   
-	rimLight.setPosition(glm::vec3(400, 300, -400));         
-	rimLight.lookAt(glm::vec3(0, 0, 0));
-
-	ambLight.setup();
-	ambLight.enable();
-	ambLight.setDirectional();
-	ambLight.setDiffuseColor(ofColor::white); 
-	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));     
-	ambLight.setPosition(glm::vec3(300, 300, 500));         
-	ambLight.lookAt(glm::vec3(0, 0, 0));
-
-	spaceLight.setup();
-	spaceLight.setSpotlight();
-	spaceLight.setDiffuseColor(ofColor::cyan);
-	spaceLight.setSpotlightCutOff(45);
-	spaceLight.setAttenuation(1.0, 0.01, 0.01);
-
+	initThreePointLighting();
 
 	// create sliders for testing
 	//
@@ -669,6 +633,43 @@ void ofApp::initEmitters() {
 }
 
 void ofApp::initThreePointLighting() {
+	keyLight.setup();
+	keyLight.enable();
+	keyLight.setDirectional();
+	keyLight.setAreaLight(1000, 1000);
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	keyLight.setDiffuseColor(ofColor::white);
+	keyLight.setPosition(glm::vec3(500, 500, 0.0));
+
+	fillLight.setup();
+	fillLight.enable();
+	fillLight.setDirectional();
+	fillLight.setAmbientColor(ofFloatColor(0.05, 0.05, 0.05));
+	fillLight.setDiffuseColor(ofColor::orange);               
+	fillLight.setPosition(glm::vec3(-400, 300, 400));          
+	fillLight.lookAt(glm::vec3(0, 0, 0));   
+	
+	rimLight.setup();
+	rimLight.enable();
+	rimLight.setDirectional();
+	rimLight.setDiffuseColor(ofFloatColor(0.2, 0.2, 1.0));
+	rimLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.3));   
+	rimLight.setPosition(glm::vec3(400, 300, -400));         
+	rimLight.lookAt(glm::vec3(0, 0, 0));
+
+	ambLight.setup();
+	ambLight.enable();
+	ambLight.setDirectional();
+	ambLight.setDiffuseColor(ofColor::white); 
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));     
+	ambLight.setPosition(glm::vec3(300, 300, 500));         
+	ambLight.lookAt(glm::vec3(0, 0, 0));
+
+	spaceLight.setup();
+	spaceLight.setSpotlight();
+	spaceLight.setDiffuseColor(ofColor::cyan);
+	spaceLight.setSpotlightCutOff(45);
+	spaceLight.setAttenuation(1.0, 0.01, 0.01);
 	
 }
 
