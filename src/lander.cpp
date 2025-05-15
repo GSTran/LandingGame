@@ -42,12 +42,12 @@ void Lander::loadModel() {
 
 Box Lander::getTransformBounds() {
 	ofVec3f bboxCenter = model.getSceneCenter();
-	ofVec3f offset = -bboxCenter / 1.6;
+	ofVec3f offset = -bboxCenter;
 
 	ofVec3f min = model.getSceneMin() + pos + offset;
 	ofVec3f max = model.getSceneMax() + pos + offset;
 
-	return Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
+	return Box(Vector3(min.x, min.y + 1, min.z), Vector3(max.x, max.y + 1, max.z));
 }
 
 void Lander::landedLogic() {

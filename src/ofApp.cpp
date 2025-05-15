@@ -81,7 +81,6 @@ void ofApp::setup(){
 	bHide = false;
 
 	//  Create Octree for testing.
-	
 	octree.create(mars.getMesh(0), 20);
 
 	ship.loadModel();
@@ -91,13 +90,19 @@ void ofApp::setup(){
 	// load textures
 	//
 	if (!ofLoadImage(particleTex, "images/smoke.png")) {
-		cout << "Particle Texture File: images/dot.png not found" << endl;
+		cout << "Particle Texture File: images/smoke.png not found" << endl;
+		ofExit();
+	}
+
+	if (!ofLoadImage(explosionTex, "images/explosion.png")) {
+		cout << "Explosion Texture File: images/explosion.png not found" << endl;
 		ofExit();
 	}
 
 	initEmitters();
 
 	ship.pos = glm::vec3(0.0, 2.0, 0.0);
+	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(800, 1000), ofRandom(-1000, 1000));
 
 	// load the shader
 	//
@@ -126,6 +131,23 @@ void ofApp::loadVbo() {
 	vbo.clear();
 	vbo.setVertexData(&points[0], total, GL_STATIC_DRAW);
 	vbo.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
+}
+
+void ofApp::loadVbo2() {
+	if (explosionEmitter.sys->particles.size() < 1) return;
+
+	vector<ofVec3f> sizes; 
+	vector<ofVec3f> points;
+	for (int i = 0; i < explosionEmitter.sys->particles.size(); i++) {
+		points.push_back(explosionEmitter.sys->particles[i].position);
+		sizes.push_back(ofVec3f(100.0));
+	}
+	// upload the data to the vbo
+	//
+	int total = (int)points.size();
+	vbo2.clear();
+	vbo2.setVertexData(&points[0], total, GL_STATIC_DRAW);
+	vbo2.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
  
 
@@ -228,9 +250,19 @@ void ofApp::update() {
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
-	if (colBoxList.size() < 10) {
-		ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
-	} else if (!keymap[OF_KEY_UP]){
+	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
+
+
+	if (colBoxList.size() > 10 && !shipExplode) {
+		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
+		if (ship.velocity.length() > 5.0) {
+			cout << "CRASH" << endl;
+			shipExplode = true;
+			explosionEmitter.sys->reset();
+			explosionEmitter.start();
+		}
+	}
+	if (!keymap[OF_KEY_UP] && colBoxList.size() > 10 && !shipExplode) {
 		// TODO: Fix clipping into ground when up arrow held just before crash
 		if (ship.velocity.length() > 5.0f){
 			//cout << "CRASH" << endl;
@@ -243,6 +275,9 @@ void ofApp::update() {
 			}
 		} 
 		ship.landedLogic();
+	}
+	if (shipExplode) {
+		ship.forces += explosionForce;
 	}
 
 	if(bGameOver){
@@ -261,20 +296,20 @@ void ofApp::update() {
 
 	colBoxList.clear();
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
-
 	ship.integrate();
+
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
-	altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
 
-	// cam.setPosition(ship.pos + glm::vec3(0, 10, 20));
+	altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
+	explosionEmitter.setPosition(ship.pos);
+	explosionEmitter.update();
+
 	cam.setTarget(ship.pos);
 
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
 	topCam.lookAt(ship.pos);
 
-
-	
 	//spaceLights 
 	if(toggleLight){
 		spaceLight.enable();
@@ -283,9 +318,12 @@ void ofApp::update() {
 	}else{
 		spaceLight.disable();
 	}
-}
+  
+	if (bMoveCamera) cam.disableMouseInput();
+	else cam.enableMouseInput();
 //--------------------------------------------------------------
 void ofApp::draw() {
+
 
 	//background
 	ofPushMatrix();
@@ -295,6 +333,10 @@ void ofApp::draw() {
 	backgroundImage.draw(-500, -500);
 	ofEnableDepthTest();
 	ofPopMatrix();
+
+	glDepthMask(false);
+	// if (!bHide) gui.draw();
+	glDepthMask(true);
 	
 	camPointer->begin();
 
@@ -343,8 +385,7 @@ void ofApp::draw() {
 	if (bDisplayLeafNodes) {
 		octree.drawLeafNodes(octree.root);
 		cout << "num leaf: " << octree.numLeaf << endl;
-    }
-	else if (bDisplayOctree) {
+  } else if (bDisplayOctree) {
 		ofNoFill();
 		octree.draw(numLevels, 0);
 	}
@@ -381,7 +422,6 @@ void ofApp::draw() {
 	
 	drawParticles();
 
-
 	if(toggleAltitude){
 	string frameRate;
 	frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
@@ -403,6 +443,7 @@ void ofApp::draw() {
 void ofApp::drawParticles(){
 
 	loadVbo();
+	loadVbo2();
 
 	ofSetColor(ofColor::dimGrey);
 	glDepthMask(GL_FALSE);
@@ -426,6 +467,10 @@ void ofApp::drawParticles(){
 	particleTex.bind();
 	vbo.draw(GL_POINTS, 0, (int)emitter.sys->particles.size());
 	particleTex.unbind();
+
+	explosionTex.bind();
+	vbo2.draw(GL_POINTS, 0, (int)explosionEmitter.sys->particles.size());
+	explosionTex.unbind();
 
 	//  end drawing in the camera
 	// 
@@ -468,15 +513,17 @@ void ofApp::keyPressed(int key) {
 			cameraSelector *= -1;
 		}
 		break;
+	case 'V':
+	case 'v':
+		bMoveCamera = !bMoveCamera;
+		break;
 	case 'O':
 	case 'o':
 		bDisplayOctree = !bDisplayOctree;
 		break;
-	case ' ':
-		cout << "Emitter" << endl;
-		emitter.sys->reset();
-		emitter.start();
-		
+	case 'X':
+	case 'x':
+		enableAltitude = !enableAltitude;
 		break;
 	default:
 		break;
@@ -533,12 +580,12 @@ void ofApp::mousePressed(int x, int y, int button) {
 	//
 	if (cam.getMouseInputEnabled()) return;
 
-	// if moving camera, don't allow mouse interaction
-//
-	if (cam.getMouseInputEnabled()) return;
+	if (bMoveCamera) {
+		ofVec3f p;
+		raySelectWithOctree(p);
+		cam.setPosition(p + ofVec3f(0.0, 1.0, 0.0));
+	}
 
-	// if rover is loaded, test for selection
-	//
 }
 
 //--------------------------------------------------------------
@@ -633,6 +680,25 @@ void ofApp::initEmitters() {
 
 	turbForce = new TurbulenceForce(ofVec3f(-2.5, 0.0, -2.5), ofVec3f(2.5, 0.0, 2.5));
 	emitter.sys->addForce(turbForce);
+
+	explosionEmitter.setPosition(ofVec3f(0, 0, 0));
+	explosionEmitter.setVelocity(ofVec3f(0, 10, 0));
+	explosionEmitter.setOneShot(true);
+	explosionEmitter.setEmitterType(RadialEmitter);
+	explosionEmitter.setParticleRadius(10);
+	explosionEmitter.setLifespanRange(ofVec2f(15.0, 20.0));
+	explosionEmitter.setMass(0.1);
+	explosionEmitter.setDamping(0.97);
+	explosionEmitter.setGroupSize(1000);
+
+	gravityForce = new GravityForce(ofVec3f(0, -2.0, 0));
+	radialForce = new ImpulseRadialForce(100);
+
+	explosionEmitter.sys->addForce(turbForce);
+	explosionEmitter.sys->addForce(gravityForce);
+	explosionEmitter.sys->addForce(radialForce);
+
+
 }
 
 void ofApp::initThreePointLighting() {
@@ -678,4 +744,25 @@ void ofApp::initThreePointLighting() {
 
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 
+}
+
+bool ofApp::raySelectWithOctree(ofVec3f &pointRet) {
+	ofVec3f mouse(mouseX, mouseY);
+	ofVec3f rayPoint = cam.screenToWorld(mouse);
+	ofVec3f rayDir = rayPoint - cam.getPosition();
+	rayDir.normalize();
+	Ray ray = Ray(Vector3(rayPoint.x, rayPoint.y, rayPoint.z),
+		Vector3(rayDir.x, rayDir.y, rayDir.z));
+	
+	int t1 = ofGetElapsedTimeMillis();
+	pointSelected = octree.intersect(ray, octree.root, selectedNode);
+	int t2 = ofGetElapsedTimeMillis();
+
+	if (bTimingInfo) cout << "Time for ray selection: " << t2 - t1 << endl;
+
+	if (pointSelected) {
+		pointRet = octree.mesh.getVertex(selectedNode.points[0]);
+	}
+
+	return pointSelected;
 }
