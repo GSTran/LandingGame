@@ -44,18 +44,52 @@ class ofApp : public ofBaseApp{
 		void drawParticles();
 		void initEmitters();
 		void initThreePointLighting();
+		void resetGame();
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
 		ofxAssimpModelLoader mars, lander;
-		ofLight keyLight, fillLight, ambLight;
+		ofLight keyLight, fillLight, ambLight, rimLight, spaceLight;
 		Box boundingBox, landerBounds;
 		vector<Box> colBoxList;
 		bool bLanderSelected = false;
 		Octree octree;
 		TreeNode selectedNode;
 		glm::vec3 mouseDownPos, mouseLastPos;
+		ofImage backgroundImage;
+
+		ofTrueTypeFont titleFont;
+		ofTrueTypeFont subtitleFont;
+		ofTrueTypeFont gameOverFont;
+
+
 		bool bInDrag = false;
+		bool toggleLight = false;
+		string altitude;
+		bool bTitleScreen = true;
+		float titleCamAngle = 0.0f;
+		bool bFadingOut = false;
+		float fadeAlpha = 0.0f;
+		bool bGameOver = false;
+		float fadeStartTime = 0.0f;
+		float fadeDuration = 2.0f;
+		float gameOverDelay = 3.0f;
+		bool toggleAltitude = false;
+
+		//sound bools and floats
+		
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound;
+
+		bool titleFadingOut = false;
+		float titleSongVolume = 1.0f;
+		float backgroundMusicVolume = 0.0f;
+		float backgroundFadingIn = false;
+		float backgroundFadingOut = false;
+
+
+		float fadeSpeed = 0.1f;
+		float fadeSpeedBG = 0.05f;
+
 
 		Lander ship;
 
@@ -72,6 +106,9 @@ class ofApp : public ofBaseApp{
 		ofVec3f explosionForce;
 
 		ofTexture  particleTex, explosionTex;
+
+		
+		
 
 		// shaders
 		//
