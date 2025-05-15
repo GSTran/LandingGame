@@ -103,7 +103,7 @@ void ofApp::setup(){
 
 	initEmitters();
 
-	ship.pos = glm::vec3(0.0, 2.0, 0.0);
+	ship.pos = glm::vec3(0.1, 2.0, 0.1); // DO NOT CHANGE, WILL BREAK ALTITUDE CALCULATIONS
 	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(800, 1000), ofRandom(-1000, 1000));
 
 	// load the shader
@@ -160,8 +160,6 @@ void ofApp::resetGame(){
 	fadeStartTime = 0.0f;
 	bGameOver = false;
 
-	
-
 	titleCamAngle = 0.0f;
 
 	titleSong.setVolume(1.0f);
@@ -189,8 +187,9 @@ void ofApp::update() {
 		titleCamAngle += 0.1f;
 		float rad = glm::radians(titleCamAngle);
 		glm::vec3 camPos = ship.pos + glm::vec3(cos(rad) * radius, 10, sin(rad) * radius);
-    	camPointer->setPosition(camPos);
-    	camPointer->lookAt(ship.pos);
+		camPointer->setPosition(camPos);
+		camPointer->lookAt(ship.pos);
+		cam.disableMouseInput();
 		return;
 	}
 
@@ -295,8 +294,9 @@ void ofApp::update() {
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 	ship.integrate();
 
-	if (toggleAltitude)
+	if (toggleAltitude && ofGetFrameNum() % 10 == 0)
 		altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
+	cout << altitude << endl;
 
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
@@ -363,13 +363,13 @@ void ofApp::draw() {
 	
 
 	if(toggleLight){
-	ofPushMatrix();
-	ofTranslate(ship.pos - glm::vec3(0, 4, 0));
-	ofRotateDeg(180, 1, 0, 0);
-	ofSetColor(ofColor::cyan);
-	ofEnableBlendMode(OF_BLENDMODE_ADD);     
-	ofDrawCone(0, 0, 0, 2, 1);
-	ofPopMatrix();
+		ofPushMatrix();
+		ofTranslate(ship.pos - glm::vec3(0, 4, 0));
+		ofRotateDeg(180, 1, 0, 0);
+		ofSetColor(ofColor::cyan);
+		ofEnableBlendMode(OF_BLENDMODE_ADD);     
+		ofDrawCone(0, 0, 0, 2, 1);
+		ofPopMatrix();
 	}
 	
 	// Game ship draw code ends here
@@ -492,6 +492,7 @@ void ofApp::keyPressed(int key) {
 		if(bTitleScreen){
 			bTitleScreen = false;
 			titleFadingOut = true;
+			cam.enableMouseInput();
 		}
 		break;
 	case '1':
