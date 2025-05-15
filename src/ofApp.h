@@ -45,10 +45,17 @@ class ofApp : public ofBaseApp{
 		void initEmitters();
 		void initThreePointLighting();
 		void resetGame();
+		void checkLanding(glm::vec2 point, bool &landedFlag);
+
+
+		bool landed1 = false;
+		bool landed2 = false;
+		bool landed3 = false;
+		int landingCount = 0;
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
-		ofxAssimpModelLoader mars, lander;
+		ofxAssimpModelLoader mars, lander, target, target1, target2;
 		ofLight keyLight, fillLight, ambLight, rimLight, spaceLight;
 		Box boundingBox, landerBounds;
 		vector<Box> colBoxList;
@@ -76,6 +83,7 @@ class ofApp : public ofBaseApp{
 		bool bFadingOut = false;
 		float fadeAlpha = 0.0f;
 		bool bGameOver = false;
+		bool bGameWin = false;
 		float fadeStartTime = 0.0f;
 		float fadeDuration = 2.0f;
 		float gameOverDelay = 3.0f;

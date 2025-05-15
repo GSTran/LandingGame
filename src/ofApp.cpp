@@ -73,8 +73,19 @@ void ofApp::setup(){
 
 	cout << "Moon Test Data: " << endl;
 	mars.loadModel("geo/terrain.obj");
-
 	mars.setScaleNormalization(false);
+
+	target.loadModel("geo/target.obj");
+	target.setScaleNormalization(false);
+	target.setPosition(20, -10, 20);
+
+	target1.loadModel("geo/target.obj");
+	target1.setScaleNormalization(false);
+	target1.setPosition(-40, 2, -270);
+
+	target2.loadModel("geo/target.obj");
+	target2.setScaleNormalization(false);
+	target2.setPosition(300, 2, -100);
 
 	
 	initThreePointLighting();
@@ -86,7 +97,37 @@ void ofApp::setup(){
 	bHide = false;
 
 	//  Create Octree for testing.
-	octree.create(mars.getMesh(0), 20);
+	ofMesh terrainmesh = mars.getMesh(0);
+
+    std::vector<ofMesh> meshes = {
+    target.getMesh(0),
+    target1.getMesh(0),
+    target2.getMesh(0)
+	};
+
+	std::vector<ofxAssimpModelLoader*> models = {
+    &target,
+    &target1,
+    &target2
+	};
+
+    // Transform the vertices of the spacebuilding mesh to the correct position
+    for (int m = 0; m < meshes.size(); ++m) {
+    ofMesh& mesh = meshes[m];  // reference so we can modify it
+    ofMatrix4x4 modelMatrix = models[m]->getModelMatrix();
+
+    for (int i = 0; i < mesh.getNumVertices(); ++i) {
+        ofVec3f v = mesh.getVertex(i);
+        ofVec3f transformed = modelMatrix.preMult(v);
+        mesh.setVertex(i, transformed);
+    }
+	terrainmesh.append(mesh);
+	}	
+
+    //terrainmesh.append(targetMesh);
+    octree.create(terrainmesh, 20);
+
+	//octree.create(mars.getMesh(0), 20);
 
 	ship.loadModel();
 
@@ -163,6 +204,12 @@ void ofApp::resetGame(){
 	fadeAlpha = 0.0f;
 	fadeStartTime = 0.0f;
 	bGameOver = false;
+	bGameWin = false;
+
+	landingCount = 0;
+	landed1 = false;
+	landed2 = false;
+	landed3 = false;
 
 	titleCamAngle = 0.0f;
 
@@ -267,7 +314,7 @@ void ofApp::update() {
 
 	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 
-	if (colBoxList.size() > 10 && !bGameOver) {
+	if (colBoxList.size() > 4 && !bGameOver) {
 		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
 		if (ship.velocity.length() > 5.0) {
 			shipExplode = true;
@@ -285,6 +332,23 @@ void ofApp::update() {
 		}
 		if (!keymap[OF_KEY_UP] && !bGameOver)
 			ship.landedLogic();
+
+			glm::vec2 point1 = glm::vec2(20.0, 20.0);
+			glm::vec2 point2 = glm::vec2(-40.0, -270.0);
+			glm::vec2 point3 = glm::vec2(300.0, -100.0);
+			
+
+			checkLanding(point1, landed1);
+			checkLanding(point2, landed2);
+			checkLanding(point3, landed3);
+
+		}
+	
+		if(landingCount == 3){
+			cout << "You win!" << endl;
+			bGameWin = true;
+			bFadingOut = true;
+			fadeStartTime = ofGetElapsedTimef();
 		}
 
 	if(bGameOver){
@@ -301,6 +365,17 @@ void ofApp::update() {
 			resetGame();
 		}
 		// return;
+	}
+
+	if(bGameWin){
+		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
+		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
+		backgroundFadingOut = true;
+
+		if(elapsedTime > gameOverDelay){
+			
+			resetGame();
+		}
 	}
 
 	colBoxList.clear();
@@ -332,6 +407,14 @@ void ofApp::update() {
 	if (bMoveCamera) cam.disableMouseInput();
 	else cam.enableMouseInput();
 }
+
+void ofApp::checkLanding(glm::vec2 point, bool &landedFlag){
+	glm::vec2 ship2DPos = glm::vec2(ship.pos.x, ship.pos.z);
+	if( glm::distance(ship2DPos, point) < 20.0f){
+		landedFlag = true;
+		landingCount++;
+	}
+}
  
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -353,6 +436,9 @@ void ofApp::draw() {
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
 	mars.drawFaces();
+	target.drawFaces();
+	target1.drawFaces();
+	target2.drawFaces();
 	ofMesh mesh;
 
 	// Game ship draw code starts here
@@ -411,7 +497,7 @@ void ofApp::draw() {
 			ofSetColor(ofColor::white);
 			//blinking text effect 
 			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Confirm", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
-			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up/Down    to    Select", ofGetWidth() / 2 - 160, ofGetHeight() - 130);
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up    and    Down    to    Select", ofGetWidth() / 2 - 160, ofGetHeight() - 130);
 
 			ofNoFill();
 			ofSetColor(255, 165, 0);
@@ -438,20 +524,90 @@ void ofApp::draw() {
 			ofSetColor(ofColor::white);
 		}
 		if (bDisplayInstructs) {
-			ofSetColor(ofColor::white);
-			string instructionText = 
-				"The time has come for cats to colonize whatever this place is!\n"
-				"But first you must learn how to use this ship.\n\n"
-				"				To move the ship around use the WASD keys\n"
-				"				To rotate the ship use the Q and E keys\n"
-				"				To use the ship thrusters press the Arrow Up key\n"
-				"				To show the altitude and velocity sensors press the 2 key\n"
-				"				To change camera views press the C key\n"
-				"				To change the third-person camera position press the V key and click\n"
-				"				anywhere on the map terain\n\n\n"
-				"Be careful! We could only afford 2 minutes of fuel :(\n"
-				"Once you land in all three landing zones, the mission is complete!";
-			subtitleFont.drawString(instructionText, 100, 100);
+			float x = ofGetWidth() / 2 - 450;
+		float y = ofGetHeight() / 2 - 220;
+		float lineHeight = subtitleFont.getLineHeight();
+
+
+		subtitleFont.drawString("Private   Kyuruga!", x, y);
+		y += lineHeight * 2;
+		ofSetColor(ofColor::red);
+		subtitleFont.drawString("The   time   has   come   for   cats   to   colonize   whatever   this   place   is!", x, y);
+		y += lineHeight;
+
+
+		ofSetColor(ofColor::white);
+		subtitleFont.drawString("But   first   you   must   learn   how   to   use   this   ship", x, y);
+		y += lineHeight * 2;
+		string controls1 = "              To   move   the   ship   around   use   the   ";
+		subtitleFont.drawString(controls1, x, y);
+		ofSetColor(ofColor::blue);
+		subtitleFont.drawString("WASD   keys", x + subtitleFont.stringWidth(controls1), y);
+		ofSetColor(ofColor::white);
+		y += lineHeight;
+		string controls2 = "              To   rotate   the   ship   use   the   ";
+		subtitleFont.drawString(controls2, x, y);
+		ofSetColor(ofColor::blue);
+		subtitleFont.drawString("Q   and   E   keys", x + subtitleFont.stringWidth(controls2), y);
+		y += lineHeight;
+		ofSetColor(ofColor::white);
+		string controls3 = "              To   use   the   ship   thrusters   press   the   ";
+		subtitleFont.drawString(controls3, x, y);
+		ofSetColor(ofColor::blue);
+		subtitleFont.drawString("Arrow   Up   key", x + subtitleFont.stringWidth(controls3), y);
+		y += lineHeight;
+
+		ofSetColor(ofColor::white);
+		string controls4 = "              To   show   the   altitude   and   velocity   sensors   press   the   ";
+		subtitleFont.drawString(controls4, x, y);
+		ofSetColor(ofColor::blue);
+		subtitleFont.drawString("2   key", x + subtitleFont.stringWidth(controls4), y);
+		y += lineHeight;
+		ofSetColor(ofColor::white);
+		string controls5 = "              To   change   camera   views   press   the   ";
+		subtitleFont.drawString(controls5, x, y);
+		ofSetColor(ofColor::blue);
+		subtitleFont.drawString("C   key", x + subtitleFont.stringWidth(controls5), y);
+		y += lineHeight;
+		ofSetColor(ofColor::white);
+		string controls6 = "              To   change   the   third   person   camera   position   press   the   ";
+		subtitleFont.drawString(controls6, x, y);
+		ofSetColor(ofColor::blue);
+		subtitleFont.drawString("V   key   and   click", x + subtitleFont.stringWidth(controls6), y);
+		
+		y += lineHeight * 2;
+		ofSetColor(ofColor::white);
+
+
+		string fuelText1 = "Be   careful!   We   could   only   afford ";
+		subtitleFont.drawString(fuelText1, x, y);
+
+		ofSetColor(ofColor::orange);
+		subtitleFont.drawString("2   minutes   of   fuel!", x + subtitleFont.stringWidth(fuelText1), y);
+
+
+		y += lineHeight * 2;
+
+
+		ofSetColor(ofColor::white);
+		string landingText1 = "Once   you   land   in   all ";
+		subtitleFont.drawString(landingText1, x, y);
+
+
+		ofSetColor(ofColor::green);  
+		subtitleFont.drawString("three   landing   zones", x + subtitleFont.stringWidth(landingText1), y);
+
+
+				ofSetColor(ofColor::white);
+		y += lineHeight;
+		subtitleFont.drawString("the   mission   is   complete!", x, y );
+
+
+		y += lineHeight * 2;
+		subtitleFont.drawString("Commander    Felicette", x, y);
+
+
+
 
 			ofSetColor(114, 204, 242);
 			subtitleFont.drawString("Return   to   Menu", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
@@ -484,7 +640,12 @@ void ofApp::draw() {
 		ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
 		ofSetColor(255, 255, 255, fadeAlpha);
-		ofDrawBitmapString("Game Over", ofGetWidth()/2 - 50, ofGetHeight()/2);
+		string endingMessage;
+		if(bGameWin) endingMessage = "Mission Complete!";
+		if(bGameOver) endingMessage = "Mission Failed!";
+		ofDrawBitmapString(endingMessage, ofGetWindowWidth()/2 - 50, ofGetHeight()/2);
+	
+		
 	}
 }
 
