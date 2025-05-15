@@ -60,6 +60,8 @@ void ofApp::setup(){
 	subtitleFont.load("fonts/subtitle.ttf", 20);
 	gameOverFont.load("fonts/subtitle.ttf", 40);
 	
+	fuelTimer = 120000; // 2 minutes in miliseconds
+	lastTime = 0;
 
 	backgroundImage.load("images/background.jpg");
 
@@ -106,11 +108,11 @@ void ofApp::setup(){
 
 	// load the shader
 	//
-#ifdef TARGET_OPENGLES
-	shader.load("shaders_gles/shader");
-#else
-	shader.load("shaders/shader");
-#endif
+	#ifdef TARGET_OPENGLES
+		shader.load("shaders_gles/shader");
+	#else
+		shader.load("shaders/shader");
+	#endif
 }
 
 
@@ -227,13 +229,16 @@ void ofApp::update() {
 
 	//end of music logic
 	
-	
-	if (keymap[OF_KEY_UP])  {
-		
+	if (keymap[OF_KEY_UP] && fuelTimer > 0)  {
+		currentTime = ofGetElapsedTimeMillis();
+		if (lastTime == 0) lastTime = currentTime;
+		fuelTimer -= (currentTime - lastTime);
+		lastTime = ofGetElapsedTimeMillis();
+		lastTime = currentTime;
+
 		if (ofGetFrameNum() % 5 == 0) {
 			emitter.sys->reset();
 			emitter.start();
-			
     }
 		ship.forces += 3 * ship.headingY();
 		if (!rocket.isPlaying()) {
@@ -252,14 +257,12 @@ void ofApp::update() {
 
 	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 
-
 	if (colBoxList.size() > 10 && !bGameOver) {
 		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
 		if (ship.velocity.length() > 5.0) {
 			shipExplode = true;
 			explosionEmitter.sys->reset();
 			explosionEmitter.start();
-
 			bGameOver = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
@@ -285,18 +288,18 @@ void ofApp::update() {
 			
 			resetGame();
 		}
-		return;
+		// return;
 	}
 
 	colBoxList.clear();
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 	ship.integrate();
 
-	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
-	emitter.update();
-
 	if (toggleAltitude)
 		altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
+
+	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
+	emitter.update();
 	explosionEmitter.setPosition(ship.pos);
 	explosionEmitter.update();
 
