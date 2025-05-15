@@ -79,7 +79,7 @@ class ofApp : public ofBaseApp{
 
 		//sound bools and floats
 		
-		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound;
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion;
 
 		bool titleFadingOut = false;
 		float titleSongVolume = 1.0f;
