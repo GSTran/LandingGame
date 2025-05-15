@@ -57,6 +57,7 @@ class ofApp : public ofBaseApp{
 		TreeNode selectedNode;
 		glm::vec3 mouseDownPos, mouseLastPos;
 		ofImage backgroundImage;
+		float fuelTimer, lastTime, currentTime;
 
 		ofTrueTypeFont titleFont;
 		ofTrueTypeFont subtitleFont;
