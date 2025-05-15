@@ -95,7 +95,6 @@ class ofApp : public ofBaseApp{
 
 		ParticleEmitter emitter, explosionEmitter;
 		bool shipExplode = false;
-		bool enableAltitude = false;
 		bool bMoveCamera = false;
 
 		TurbulenceForce *turbForce;

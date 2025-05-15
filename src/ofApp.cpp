@@ -265,7 +265,6 @@ void ofApp::update() {
 	if (!keymap[OF_KEY_UP] && colBoxList.size() > 10 && !shipExplode) {
 		// TODO: Fix clipping into ground when up arrow held just before crash
 		if (ship.velocity.length() > 5.0f){
-			//cout << "CRASH" << endl;
 			bGameOver = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
@@ -281,6 +280,7 @@ void ofApp::update() {
 	}
 
 	if(bGameOver){
+		camPointer = &cam;
 		toggleAltitude = false;
 		toggleLight = false;
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
@@ -321,10 +321,10 @@ void ofApp::update() {
   
 	if (bMoveCamera) cam.disableMouseInput();
 	else cam.enableMouseInput();
+}
+ 
 //--------------------------------------------------------------
 void ofApp::draw() {
-
-
 	//background
 	ofPushMatrix();
 	ofDisableDepthTest();
@@ -423,11 +423,11 @@ void ofApp::draw() {
 	drawParticles();
 
 	if(toggleAltitude){
-	string frameRate;
-	frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
-	ofSetColor(ofColor::white);
-	ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
-	ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
+		string frameRate;
+		frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
+		ofSetColor(ofColor::white);
+		ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
+		ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
 	}
 
 	if(bFadingOut){
@@ -494,7 +494,6 @@ void ofApp::keyPressed(int key) {
 		if(bTitleScreen){
 			bTitleScreen = false;
 			titleFadingOut = true;
-			
 		}
 		break;
 	case '1':
@@ -520,10 +519,6 @@ void ofApp::keyPressed(int key) {
 	case 'O':
 	case 'o':
 		bDisplayOctree = !bDisplayOctree;
-		break;
-	case 'X':
-	case 'x':
-		enableAltitude = !enableAltitude;
 		break;
 	default:
 		break;
