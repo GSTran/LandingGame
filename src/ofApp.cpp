@@ -426,28 +426,32 @@ void ofApp::draw() {
 
 			// Interactive Menu Elements
 			if (menuList == 1) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 80);
+			subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 110, ofGetHeight() /2 - 80);
 			ofSetColor(ofColor::white);
 
 			if (menuList == 2) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 100, ofGetHeight() /2);
+			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 110, ofGetHeight() /2);
 			ofSetColor(ofColor::white);
 
 			if (menuList == 3) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Debug    Mode", ofGetWidth() / 2 - 100, ofGetHeight() /2 + 80);
+			subtitleFont.drawString("Debug    Mode", ofGetWidth() / 2 - 110, ofGetHeight() /2 + 80);
 			ofSetColor(ofColor::white);
 		}
 		if (bDisplayInstructs) {
 			ofSetColor(ofColor::white);
 			string instructionText = 
-				"The time has come for the cats to colonize whatever this place is!\n"
+				"The time has come for cats to colonize whatever this place is!\n"
 				"But first you must learn how to use this ship.\n\n"
-				"        To move the ship around use the WASD keys\n"
-				"        To rotate the ship use the Q and E keys\n"
-				"        To use the ship thrusters press the Arrow Up key\n"
-				"Be careful! We could only afford 2 minutes of fuel :(\n\n"
+				"				To move the ship around use the WASD keys\n"
+				"				To rotate the ship use the Q and E keys\n"
+				"				To use the ship thrusters press the Arrow Up key\n"
+				"				To show the altitude and velocity sensors press the 2 key\n"
+				"				To change camera views press the C key\n"
+				"				To change the third-person camera position press the V key and click\n"
+				"				anywhere on the map terain\n\n\n"
+				"Be careful! We could only afford 2 minutes of fuel :(\n"
 				"Once you land in all three landing zones, the mission is complete!";
-			subtitleFont.drawString(instructionText, 30, 30);
+			subtitleFont.drawString(instructionText, 100, 100);
 
 			ofSetColor(114, 204, 242);
 			subtitleFont.drawString("Return   to   Menu", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
