@@ -40,6 +40,7 @@ class ofApp : public ofBaseApp{
 		bool raySelectWithOctree(ofVec3f &pointRet);
 		glm::vec3 getMousePointOnPlane(glm::vec3 p , glm::vec3 n);
 		void loadVbo();
+		void loadVbo2();
 		void drawParticles();
 		void initEmitters();
 		void initThreePointLighting();
@@ -92,21 +93,25 @@ class ofApp : public ofBaseApp{
 
 		Lander ship;
 
-		ParticleEmitter emitter;
+		ParticleEmitter emitter, explosionEmitter;
+		bool shipExplode = false;
+		bool bMoveCamera = false;
 
 		TurbulenceForce *turbForce;
 		GravityForce *gravityForce;
 		ImpulseRadialForce *radialForce;
 		CyclicForce *cyclicForce;
 
-		ofTexture  particleTex;
+		ofVec3f explosionForce;
+
+		ofTexture  particleTex, explosionTex;
 
 		
 		
 
 		// shaders
 		//
-		ofVbo vbo;
+		ofVbo vbo, vbo2;
 		ofShader shader;
 
 		ofxIntSlider numLevels;
@@ -127,8 +132,6 @@ class ofApp : public ofBaseApp{
 		bool bLanderLoaded;
 		bool bTerrainSelected;
 
-		bool collisionResolution = false;
-	
 		ofVec3f selectedPoint;
 		ofVec3f intersectPoint;
 
