@@ -125,7 +125,7 @@ void ofApp::loadVbo() {
 	vector<ofVec3f> points;
 	for (int i = 0; i < emitter.sys->particles.size(); i++) {
 		points.push_back(emitter.sys->particles[i].position);
-		sizes.push_back(ofVec3f(100.0));
+		sizes.push_back(ofVec3f(100.0) / (0.0006 * glm::distance2(cam.getPosition(), ship.pos)));
 	}
 	// upload the data to the vbo
 	//
@@ -168,7 +168,7 @@ void ofApp::resetGame(){
 	
 
 	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
-	ship.pos = glm::vec3(0.0, 2.0, 0.0);
+	ship.pos = glm::vec3(0.1, 2.0, 0.1);
 	ship.forces = glm::vec3(0.0, 0.0, 0.0);
 	ship.rotForce = 0.0;
 	emitter.sys->reset();
@@ -179,7 +179,6 @@ void ofApp::resetGame(){
 // incrementally update scene (animation)
 //
 void ofApp::update() {
-
 	//menu screen
 	//rotate camera around the ship until the user presses enter
 	if(bTitleScreen){
@@ -296,7 +295,6 @@ void ofApp::update() {
 
 	if (toggleAltitude && ofGetFrameNum() % 10 == 0)
 		altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
-	cout << altitude << endl;
 
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
@@ -421,11 +419,13 @@ void ofApp::draw() {
 	drawParticles();
 
 	if(toggleAltitude){
-		string frameRate;
+		string frameRate, fuelLeft;
 		frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
+		fuelLeft += "Fuel: " + ofToString(fuelTimer / 1000) + "s";
 		ofSetColor(ofColor::white);
 		ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
 		ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
+		ofDrawBitmapString(fuelLeft, ofGetWindowWidth() - 200, 90);
 	}
 
 	if(bFadingOut){
