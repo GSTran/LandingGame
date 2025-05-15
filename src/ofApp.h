@@ -61,6 +61,12 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont subtitleFont;
 		ofTrueTypeFont gameOverFont;
 
+		ofCylinderPrimitive landing1, landing2, landing3;
+		bool landed1 = false;
+		bool landed2 = false;
+		bool landed3 = false;
+		int landingCount = 0;
+
 
 		bool bInDrag = false;
 		bool toggleLight = false;
@@ -70,6 +76,7 @@ class ofApp : public ofBaseApp{
 		bool bFadingOut = false;
 		float fadeAlpha = 0.0f;
 		bool bGameOver = false;
+		bool bGameWin = false;
 		float fadeStartTime = 0.0f;
 		float fadeDuration = 2.0f;
 		float gameOverDelay = 3.0f;

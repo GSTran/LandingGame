@@ -26,6 +26,19 @@ void ofApp::setup(){
 	bTerrainSelected = true;
 //	ofSetWindowShape(1024, 768);
 
+
+	//3 landing areas
+	landing1.set(20, 5);
+	landing1.setResolution(60, 1, 1);
+	landing2.set(20, 5);
+	landing2.setResolution(60, 1, 1);
+	landing3.set(20, 5);
+	landing3.setResolution(60, 1, 1);
+
+	landing1.setPosition(-250, -11, 360);
+	landing2.setPosition(-40, 2, -270);
+	landing3.setPosition(300, 2, -100);
+
 	camPointer = &cam;
 
 	cam.setDistance(10);
@@ -136,8 +149,11 @@ void ofApp::resetGame(){
 	fadeStartTime = 0.0f;
 	bGameOver = false;
 
+	landingCount = 0;
+	landed1 = false;
+	landed2 = false;
+	landed3 = false;
 	
-
 	titleCamAngle = 0.0f;
 
 	titleSong.setVolume(1.0f);
@@ -243,9 +259,28 @@ void ofApp::update() {
 			}
 		} 
 		ship.landedLogic();
+		
+		glm::vec3 point1 = glm::vec3(-250, -11, 360);
+		glm::vec3 point2 = glm::vec3(-40, 2, -270);
+		glm::vec3 point3 = glm::vec3(300, 2, -100);
+		float distanceL1 = glm::distance(point1, ship.pos);
+		float distanceL2 = glm::distance(point2, ship.pos);
+		float distanceL3 = glm::distance(point3, ship.pos);
+		
+		checkLanding(glm::vec3(-250, -11, 360), landed1);
+		checkLanding(glm::vec3(-40, 2, -270), landed2);
+		checkLanding(glm::vec3(300, 2, -100), landed3);
+
 	}
 
-	if(bGameOver){
+	if(landingCount == 3){
+		cout << "You win!" << endl;
+		bGameWin = true;
+		bFadingOut = true;
+		fadeStartTime = ofGetElapsedTimef();
+	}
+
+	if(bGameOver || bGameWin){
 		toggleAltitude = false;
 		toggleLight = false;
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
@@ -295,8 +330,16 @@ void ofApp::draw() {
 	backgroundImage.draw(-500, -500);
 	ofEnableDepthTest();
 	ofPopMatrix();
+
+	
 	
 	camPointer->begin();
+
+	landing1.draw();
+	ofSetColor(ofColor::red);
+	landing2.draw();
+	ofSetColor(ofColor::green);
+	landing3.draw();
 
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
@@ -326,6 +369,7 @@ void ofApp::draw() {
 	ofPushMatrix();
 	ofTranslate(ship.pos - glm::vec3(0, 4, 0));
 	ofRotateDeg(180, 1, 0, 0);
+	ofFill();
 	ofSetColor(ofColor::cyan);
 	ofEnableBlendMode(OF_BLENDMODE_ADD);     
 	ofDrawCone(0, 0, 0, 2, 1);
@@ -396,7 +440,19 @@ void ofApp::draw() {
 		ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
 		ofSetColor(255, 255, 255, fadeAlpha);
-		ofDrawBitmapString("Game Over", ofGetWidth()/2 - 50, ofGetHeight()/2);
+		string endingMessage;
+		if(bGameOver) endingMessage = "Game Over";
+		else endingMessage = "You Win!";
+		int strWidth = gameOverFont.stringWidth(endingMessage);
+		int strHeight = gameOverFont.stringHeight(endingMessage);
+		ofDrawBitmapString(endingMessage, ofGetWidth()/2 - strWdith, ofGetHeight()/2 - strHeight);
+	}
+}
+
+void checkLanding(glm::vec3 landingPos, bool &landedFlag){
+	if(!landedFlag && glm::distance(ship.pos, landingPos) < 20.0f){
+		landedFlag = true;
+		landingCount++;
 	}
 }
 
