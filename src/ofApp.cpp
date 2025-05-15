@@ -195,16 +195,16 @@ void ofApp::update() {
 
 	//music logic
 	if (titleFadingOut) {
-        	titleSongVolume -= fadeSpeed;
-        	if (titleSongVolume <= 0.0f) {
-            	titleSongVolume = 0.0f;
-            	titleFadingOut = false;
-            titleSong.stop();
+		titleSongVolume -= fadeSpeed;
+		if (titleSongVolume <= 0.0f) {
+			titleSongVolume = 0.0f;
+			titleFadingOut = false;
+			titleSong.stop();
 			backgroundMusic.play();
 			backgroundFadingIn = true;
-        }
-        	titleSong.setVolume(titleSongVolume);
-    }
+		}
+		titleSong.setVolume(titleSongVolume);
+	}
 
 	if(backgroundFadingIn){
 		backgroundMusicVolume += fadeSpeedBG;
@@ -295,7 +295,8 @@ void ofApp::update() {
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
 
-	altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
+	if (toggleAltitude)
+		altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
 	explosionEmitter.setPosition(ship.pos);
 	explosionEmitter.update();
 
