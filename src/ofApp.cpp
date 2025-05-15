@@ -187,13 +187,19 @@ void ofApp::update() {
 	//menu screen
 	//rotate camera around the ship until the user presses enter
 	if(bTitleScreen){
-		float radius = 40.0f;
-		titleCamAngle += 0.1f;
-		float rad = glm::radians(titleCamAngle);
-		glm::vec3 camPos = ship.pos + glm::vec3(cos(rad) * radius, 10, sin(rad) * radius);
-		camPointer->setPosition(camPos);
-		camPointer->lookAt(ship.pos);
-		cam.disableMouseInput();
+		if (!bDebugMode) {
+			float radius = 40.0f;
+			titleCamAngle += 0.1f;
+			float rad = glm::radians(titleCamAngle);
+			glm::vec3 camPos = ship.pos + glm::vec3(cos(rad) * radius, 10, sin(rad) * radius);
+			camPointer->setPosition(camPos);
+			camPointer->lookAt(ship.pos);
+			cam.disableMouseInput();
+		}
+		if (bDebugMode) {
+			// cam.enableMouseInput();
+		}
+		
 		return;
 	}
 
@@ -400,37 +406,58 @@ void ofApp::draw() {
 	
 	//draw Text for Title Screen
 	if (bTitleScreen) {
-		
-		float time = ofGetElapsedTimef();
-    ofSetColor(ofColor::white);
-		//blinking text effect 
-		if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+		if (!bDebugMode && !bDisplayInstructs) {
+			float time = ofGetElapsedTimef();
+			ofSetColor(ofColor::white);
+			//blinking text effect 
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Confirm", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up/Down    to    Select", ofGetWidth() / 2 - 160, ofGetHeight() - 130);
 
+			ofNoFill();
+			ofSetColor(255, 165, 0);
+			titleFont.drawStringAsShapes("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -240);
+			
+			ofFill();
+			ofSetColor(114, 204, 242);
+			titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -230);
 
-		
-		ofNoFill();
-		ofSetColor(255, 165, 0);
-		titleFont.drawStringAsShapes("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -240);
-		
-		ofFill();
-		ofSetColor(114, 204, 242);
-		titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -230);
+			ofSetColor(ofColor::white);
+			subtitleFont.drawString("Crash       Landing", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 180);
 
-		ofSetColor(ofColor::white);
-		subtitleFont.drawString("Crash       Landing", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 180);
+			// Interactive Menu Elements
+			if (menuList == 1) ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 80);
+			ofSetColor(ofColor::white);
 
-		if (menuList == 1) ofSetColor(114, 204, 242);
-		subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 80);
-		ofSetColor(ofColor::white);
+			if (menuList == 2) ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 100, ofGetHeight() /2);
+			ofSetColor(ofColor::white);
 
-		if (menuList == 2) ofSetColor(114, 204, 242);
-		subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 100, ofGetHeight() /2);
-		ofSetColor(ofColor::white);
+			if (menuList == 3) ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Debug    Mode", ofGetWidth() / 2 - 100, ofGetHeight() /2 + 80);
+			ofSetColor(ofColor::white);
+		}
+		if (bDisplayInstructs) {
+			ofSetColor(ofColor::white);
+			string instructionText = 
+				"The time has come for the cats to colonize whatever this place is!\n"
+				"But first you must learn how to use this ship.\n\n"
+				"        To move the ship around use the WASD keys\n"
+				"        To rotate the ship use the Q and E keys\n"
+				"        To use the ship thrusters press the Arrow Up key\n"
+				"Be careful! We could only afford 2 minutes of fuel :(\n\n"
+				"Once you land in all three landing zones, the mission is complete!";
+			subtitleFont.drawString(instructionText, 30, 30);
 
-		if (menuList == 3) ofSetColor(114, 204, 242);
-		subtitleFont.drawString("Debug    Mode", ofGetWidth() / 2 - 100, ofGetHeight() /2 + 80);
-		ofSetColor(ofColor::white);
-
+			ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Return   to   Menu", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+		}
+		if (bDebugMode) {
+			float time = ofGetElapsedTimef();
+			ofSetColor(ofColor::white);
+			//blinking text effect 
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+		}
     return; 	
 	}
 	//end of Title Screen
@@ -509,22 +536,41 @@ void ofApp::keyPressed(int key) {
 	switch (key) {
 	case OF_KEY_RETURN:
 		if(bTitleScreen){
-			if (menuList == 1) {
+			if (bDisplayInstructs) {
+				bDisplayInstructs = false;
+				menuSelect.play();
+				break;
+			}
+			if (bDebugMode) {
 				bTitleScreen = false;
-				titleFadingOut = true;
-				cam.enableMouseInput();
+				bDebugMode = false;
+				menuSelect.play();
+				break;
 			}
-			if (menuList == 2) {
-				// Display Instructions Here
+			if (!bDisplayInstructs && !bDebugMode) {
+				switch (menuList) {
+					case 1:
+						bTitleScreen = false;
+						titleFadingOut = true;
+						cam.enableMouseInput();
+						break;
+					case 2:
+						bDisplayInstructs = true;
+						// Display Instructions Here
+						break;
+					case 3:
+						// Debug Mode Here
+						bDebugMode = true;
+						break;
+					default:
+						break;
+				}
+				menuSelect.play();
 			}
-			if (menuList == 3) {
-				// Debug Mode Here
-			}
-			menuSelect.play();
 		}
 		break;
 	case OF_KEY_DOWN:
-		if(bTitleScreen) {
+		if(bTitleScreen && !bDisplayInstructs && !bDebugMode) {
 			menuList++;
 			menuScroll.play();
 			if (menuList > 3) menuList = 1;
@@ -532,7 +578,7 @@ void ofApp::keyPressed(int key) {
 		}
 		break;
 	case OF_KEY_UP:
-		if(bTitleScreen) {
+		if(bTitleScreen && !bDisplayInstructs && !bDebugMode) {
 			menuList--;
 			menuScroll.play();
 			if (menuList > 3) menuList = 1;
@@ -620,10 +666,39 @@ void ofApp::mousePressed(int x, int y, int button) {
 		cam.setPosition(p + ofVec3f(0.0, 1.0, 0.0));
 	}
 
+	if (bDebugMode) {
+		glm::vec3 origin = cam.getPosition();
+		glm::vec3 mouseWorld = cam.screenToWorld(glm::vec3(mouseX, mouseY, 0));
+		glm::vec3 mouseDir = glm::normalize(mouseWorld - origin);
+
+		Box bounds = ship.getTransformBounds();
+		bool hit = bounds.intersect(Ray(Vector3(origin.x, origin.y, origin.z), Vector3(mouseDir.x, mouseDir.y, mouseDir.z)), 0, 10000);
+		if (hit) {
+			mouseDownPos = getMousePointOnPlane(ship.pos, cam.getZAxis());
+			mouseLastPos = mouseDownPos;
+			bInDrag = true;
+		}
+	}
+
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button) {
+	if (cam.getMouseInputEnabled()) return;
+
+	if (bInDrag) {
+		glm::vec3 shipPos = ship.pos;
+
+		glm::vec3 mousePos = getMousePointOnPlane(shipPos, cam.getZAxis());
+		glm::vec3 delta = mousePos - mouseLastPos;
+	
+		shipPos += delta;
+		ship.pos = glm::vec3(shipPos.x, shipPos.y, shipPos.z);
+		mouseLastPos = mousePos;
+
+		ofVec3f min = ship.model.getSceneMin() + ship.model.getPosition();
+		ofVec3f max = ship.model.getSceneMax() + ship.model.getPosition();
+	}
 
 }
 
@@ -799,4 +874,28 @@ bool ofApp::raySelectWithOctree(ofVec3f &pointRet) {
 	}
 
 	return pointSelected;
+}
+
+glm::vec3 ofApp::getMousePointOnPlane(glm::vec3 planePt, glm::vec3 planeNorm) {
+	// Setup our rays
+	//
+	glm::vec3 origin = cam.getPosition();
+	glm::vec3 camAxis = cam.getZAxis();
+	glm::vec3 mouseWorld = cam.screenToWorld(glm::vec3(mouseX, mouseY, 0));
+	glm::vec3 mouseDir = glm::normalize(mouseWorld - origin);
+	float distance;
+
+	bool hit = glm::intersectRayPlane(origin, mouseDir, planePt, planeNorm, distance);
+
+	if (hit) {
+		// find the point of intersection on the plane using the distance 
+		// We use the parameteric line or vector representation of a line to compute
+		//
+		// p' = p + s * dir;
+		//
+		glm::vec3 intersectPoint = origin + distance * mouseDir;
+
+		return intersectPoint;
+	}
+	else return glm::vec3(0, 0, 0);
 }

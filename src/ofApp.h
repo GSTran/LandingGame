@@ -69,6 +69,9 @@ class ofApp : public ofBaseApp{
 		bool toggleLight = false;
 		string altitude;
 		bool bTitleScreen = true;
+		bool bDebugMode = false;
+		bool bDisplayInstructs = false;
+
 		float titleCamAngle = 0.0f;
 		bool bFadingOut = false;
 		float fadeAlpha = 0.0f;
