@@ -253,18 +253,13 @@ void ofApp::update() {
 	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 
 
-	if (colBoxList.size() > 10 && !shipExplode) {
+	if (colBoxList.size() > 10 && !bGameOver) {
 		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
 		if (ship.velocity.length() > 5.0) {
-			cout << "CRASH" << endl;
 			shipExplode = true;
 			explosionEmitter.sys->reset();
 			explosionEmitter.start();
-		}
-	}
-	if (!keymap[OF_KEY_UP] && colBoxList.size() > 10 && !shipExplode) {
-		// TODO: Fix clipping into ground when up arrow held just before crash
-		if (ship.velocity.length() > 5.0f){
+
 			bGameOver = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
@@ -272,17 +267,16 @@ void ofApp::update() {
 			if (!gameOverSound.isPlaying()) {
     			gameOverSound.play();
 			}
-		} 
-		ship.landedLogic();
-	}
-	if (shipExplode) {
-		ship.forces += explosionForce;
-	}
+		}
+		if (!keymap[OF_KEY_UP] && !bGameOver)
+			ship.landedLogic();
+		}
 
 	if(bGameOver){
 		camPointer = &cam;
 		toggleAltitude = false;
 		toggleLight = false;
+		ship.forces += explosionForce;
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
 		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
 		backgroundFadingOut = true;
