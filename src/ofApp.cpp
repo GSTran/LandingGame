@@ -41,7 +41,7 @@ void ofApp::setup(){
 	topCam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	topCam.enableMouseInput();
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
-	topCam.lookAt(ship.pos);
+	topCam.lookAt(ship.getCameraLookPos());
 
 	ofEnableSmoothing();
 	ofEnableDepthTest();
@@ -49,6 +49,7 @@ void ofApp::setup(){
 	rocket.load("sounds/rocket.mp3");
 	titleSong.load("sounds/title2.mp3");
 	gameOverSound.load("sounds/gameover.mp3");
+	explosion.load("sounds/explosion.mp3");
 	backgroundMusic.load("sounds/background.mp3");
 	backgroundMusic.setLoop(true);
 	backgroundMusic.setVolume(0.0f);
@@ -104,7 +105,8 @@ void ofApp::setup(){
 	initEmitters();
 
 	ship.pos = glm::vec3(0.1, 2.0, 0.1); // DO NOT CHANGE, WILL BREAK ALTITUDE CALCULATIONS
-	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(800, 1000), ofRandom(-1000, 1000));
+	ship.rot = 180;
+	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(600, 800), ofRandom(-1000, 1000));
 
 	// load the shader
 	//
@@ -125,7 +127,7 @@ void ofApp::loadVbo() {
 	vector<ofVec3f> points;
 	for (int i = 0; i < emitter.sys->particles.size(); i++) {
 		points.push_back(emitter.sys->particles[i].position);
-		sizes.push_back(ofVec3f(100.0));
+		sizes.push_back(ofVec3f(100.0) / (0.0006 * glm::distance2(cam.getPosition(), ship.pos)));
 	}
 	// upload the data to the vbo
 	//
@@ -142,7 +144,7 @@ void ofApp::loadVbo2() {
 	vector<ofVec3f> points;
 	for (int i = 0; i < explosionEmitter.sys->particles.size(); i++) {
 		points.push_back(explosionEmitter.sys->particles[i].position);
-		sizes.push_back(ofVec3f(100.0));
+		sizes.push_back(ofVec3f(100.0) / (0.0006 * glm::distance2(cam.getPosition(), ship.pos)));
 	}
 	// upload the data to the vbo
 	//
@@ -168,7 +170,8 @@ void ofApp::resetGame(){
 	
 
 	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
-	ship.pos = glm::vec3(0.0, 2.0, 0.0);
+	ship.pos = glm::vec3(0.1, 2.0, 0.1);
+	ship.rot = 180;
 	ship.forces = glm::vec3(0.0, 0.0, 0.0);
 	ship.rotForce = 0.0;
 	emitter.sys->reset();
@@ -179,7 +182,6 @@ void ofApp::resetGame(){
 // incrementally update scene (animation)
 //
 void ofApp::update() {
-
 	//menu screen
 	//rotate camera around the ship until the user presses enter
 	if(bTitleScreen){
@@ -246,11 +248,12 @@ void ofApp::update() {
     		rocket.setVolume(0.5);
     		rocket.play();
 		}
-	}
-	if (keymap['a'] || keymap['A']) ship.forces += -5 * ship.headingX();
-	if (keymap['d'] || keymap['D']) ship.forces += 5 * ship.headingX();
-	if (keymap['s'] || keymap['S']) ship.forces += 5 * ship.headingZ();
-	if (keymap['w'] || keymap['W']) ship.forces += -5 * ship.headingZ();	
+	} else lastTime = 0;
+
+	if (keymap['w'] || keymap['W']) ship.forces += -5 * ship.headingX();
+	if (keymap['s'] || keymap['S']) ship.forces += 5 * ship.headingX();
+	if (keymap['a'] || keymap['A']) ship.forces += 5 * ship.headingZ();
+	if (keymap['d'] || keymap['D']) ship.forces += -5 * ship.headingZ();	
 	if (keymap['e'] || keymap['E']) ship.rotForce += -30.0;
 	if (keymap['q'] || keymap['Q']) ship.rotForce += 30.0;
 
@@ -262,6 +265,8 @@ void ofApp::update() {
 			shipExplode = true;
 			explosionEmitter.sys->reset();
 			explosionEmitter.start();
+			explosion.setVolume(0.3);
+			explosion.play();
 			bGameOver = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
@@ -296,7 +301,6 @@ void ofApp::update() {
 
 	if (toggleAltitude && ofGetFrameNum() % 10 == 0)
 		altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
-	cout << altitude << endl;
 
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
 	emitter.update();
@@ -305,8 +309,8 @@ void ofApp::update() {
 
 	cam.setTarget(ship.pos);
 
-	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
-	topCam.lookAt(ship.pos);
+	topCam.setPosition(ship.getCameraPos());
+	topCam.lookAt(ship.getCameraLookPos());
 
 	//spaceLights 
 	if(toggleLight){
@@ -348,11 +352,11 @@ void ofApp::draw() {
 
 	// draw colliding boxes
 	//
-	ofSetColor(ofColor::lightGreen);
-	for (int i = 0; i < colBoxList.size(); i++) {
-		ofNoFill();
-		Octree::drawBox(colBoxList[i]);
-	}
+	// ofSetColor(ofColor::lightGreen);
+	// for (int i = 0; i < colBoxList.size(); i++) {
+	// 	ofNoFill();
+	// 	Octree::drawBox(colBoxList[i]);
+	// }
 
 	//debugging
 	//keyLight.draw();
@@ -396,7 +400,7 @@ void ofApp::draw() {
 	if (bTitleScreen) {
 		
 		float time = ofGetElapsedTimef();
-    	ofSetColor(ofColor::white);
+    ofSetColor(ofColor::white);
 		//blinking text effect 
 		if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
 		
@@ -414,18 +418,16 @@ void ofApp::draw() {
 	}
 	//end of Title Screen
 
-	glDepthMask(false);
-	if (!bHide) gui.draw();
-	glDepthMask(true);
-	
 	drawParticles();
 
 	if(toggleAltitude){
-		string frameRate;
+		string frameRate, fuelLeft;
 		frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
+		fuelLeft += "Fuel: " + ofToString(fuelTimer / 1000) + "s";
 		ofSetColor(ofColor::white);
 		ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
 		ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
+		ofDrawBitmapString(fuelLeft, ofGetWindowWidth() - 200, 90);
 	}
 
 	if(bFadingOut){
@@ -514,10 +516,6 @@ void ofApp::keyPressed(int key) {
 	case 'V':
 	case 'v':
 		bMoveCamera = !bMoveCamera;
-		break;
-	case 'O':
-	case 'o':
-		bDisplayOctree = !bDisplayOctree;
 		break;
 	default:
 		break;
@@ -686,7 +684,7 @@ void ofApp::initEmitters() {
 	explosionEmitter.setGroupSize(1000);
 
 	gravityForce = new GravityForce(ofVec3f(0, -2.0, 0));
-	radialForce = new ImpulseRadialForce(100);
+	radialForce = new ImpulseRadialForce(400);
 
 	explosionEmitter.sys->addForce(turbForce);
 	explosionEmitter.sys->addForce(gravityForce);

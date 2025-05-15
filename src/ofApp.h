@@ -57,7 +57,7 @@ class ofApp : public ofBaseApp{
 		TreeNode selectedNode;
 		glm::vec3 mouseDownPos, mouseLastPos;
 		ofImage backgroundImage;
-		float fuelTimer, lastTime, currentTime;
+		int fuelTimer, lastTime, currentTime;
 
 		ofTrueTypeFont titleFont;
 		ofTrueTypeFont subtitleFont;
@@ -79,7 +79,7 @@ class ofApp : public ofBaseApp{
 
 		//sound bools and floats
 		
-		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound;
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion;
 
 		bool titleFadingOut = false;
 		float titleSongVolume = 1.0f;

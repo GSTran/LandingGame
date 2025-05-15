@@ -15,6 +15,8 @@ public:
     pos = glm::vec3(0.0,1.0,0.0);
     velocity.set(0.0, 0.0, 0.0);
 		acceleration.set(0.0, 0.0, 0.0);
+		cameraLookPos = pos + glm::vec3(-100.0, 0.0, 0.0);
+		cameraLookPos = pos + glm::vec3(-2.9, 0.5, 0.0);
 		radius = 25;
 		damping = 0.995;
 		mass = 1;
@@ -23,9 +25,6 @@ public:
   }
 
 	virtual void draw() {
-
-		// draw a box by defaultd if not overridden
-		//
 		ofPushMatrix();
 		ofMultMatrix(getTransform());
     model.drawFaces();
@@ -60,6 +59,7 @@ public:
 
   ofxAssimpModelLoader model;
 	Box bounds;
+	ofVec3f cameraLookPos;
 
   ofVec3f velocity;
 	ofVec3f acceleration;
@@ -80,4 +80,8 @@ public:
 	void landedLogic();
 
 	float calculateAltitude(Octree ground);
+
+	ofVec3f getCameraLookPos();
+
+	ofVec3f getCameraPos();
 };

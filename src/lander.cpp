@@ -67,3 +67,15 @@ float Lander::calculateAltitude(Octree ground) {
 		return glm::distance(ground.mesh.getVertex(selectedNode.points[0]), pos);
 	return 0.0;
 }
+
+ofVec3f Lander::getCameraLookPos() {
+	glm::vec4 transformedLookPos = getTransform() * glm::vec4(-100.0, 0.0, 0.0, 1.0);
+  cameraLookPos = glm::vec3(transformedLookPos);
+	return cameraLookPos;
+}
+
+ofVec3f Lander::getCameraPos() {
+	glm::vec4 transformedLookPos = getTransform() * glm::vec4(-2.9, 0.5, 0.0, 1.0);
+  cameraLookPos = glm::vec3(transformedLookPos);
+	return cameraLookPos;
+}
