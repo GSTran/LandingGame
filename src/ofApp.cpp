@@ -105,7 +105,8 @@ void ofApp::setup(){
 	initEmitters();
 
 	ship.pos = glm::vec3(0.1, 2.0, 0.1); // DO NOT CHANGE, WILL BREAK ALTITUDE CALCULATIONS
-	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(800, 1000), ofRandom(-1000, 1000));
+	ship.rot = 180;
+	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(600, 800), ofRandom(-1000, 1000));
 
 	// load the shader
 	//
@@ -170,6 +171,7 @@ void ofApp::resetGame(){
 
 	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
 	ship.pos = glm::vec3(0.1, 2.0, 0.1);
+	ship.rot = 180;
 	ship.forces = glm::vec3(0.0, 0.0, 0.0);
 	ship.rotForce = 0.0;
 	emitter.sys->reset();
@@ -246,7 +248,8 @@ void ofApp::update() {
     		rocket.setVolume(0.5);
     		rocket.play();
 		}
-	}
+	} else lastTime = 0;
+
 	if (keymap['w'] || keymap['W']) ship.forces += -5 * ship.headingX();
 	if (keymap['s'] || keymap['S']) ship.forces += 5 * ship.headingX();
 	if (keymap['a'] || keymap['A']) ship.forces += 5 * ship.headingZ();
@@ -415,10 +418,6 @@ void ofApp::draw() {
 	}
 	//end of Title Screen
 
-	glDepthMask(false);
-	if (!bHide) gui.draw();
-	glDepthMask(true);
-	
 	drawParticles();
 
 	if(toggleAltitude){
@@ -685,7 +684,7 @@ void ofApp::initEmitters() {
 	explosionEmitter.setGroupSize(1000);
 
 	gravityForce = new GravityForce(ofVec3f(0, -2.0, 0));
-	radialForce = new ImpulseRadialForce(100);
+	radialForce = new ImpulseRadialForce(400);
 
 	explosionEmitter.sys->addForce(turbForce);
 	explosionEmitter.sys->addForce(gravityForce);
