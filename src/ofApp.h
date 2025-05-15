@@ -62,6 +62,7 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont titleFont;
 		ofTrueTypeFont subtitleFont;
 		ofTrueTypeFont gameOverFont;
+		int menuList = 1;
 
 
 		bool bInDrag = false;
@@ -79,7 +80,7 @@ class ofApp : public ofBaseApp{
 
 		//sound bools and floats
 		
-		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion;
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion, menuScroll, menuSelect;
 
 		bool titleFadingOut = false;
 		float titleSongVolume = 1.0f;

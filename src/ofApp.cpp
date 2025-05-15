@@ -50,6 +50,8 @@ void ofApp::setup(){
 	titleSong.load("sounds/title2.mp3");
 	gameOverSound.load("sounds/gameover.mp3");
 	explosion.load("sounds/explosion.mp3");
+	menuScroll.load("sounds/menu-scroll.mp3");
+	menuSelect.load("sounds/menu-select.mp3");
 	backgroundMusic.load("sounds/background.mp3");
 	backgroundMusic.setLoop(true);
 	backgroundMusic.setVolume(0.0f);
@@ -299,7 +301,7 @@ void ofApp::update() {
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 	ship.integrate();
 
-	if (toggleAltitude && ofGetFrameNum() % 10 == 0)
+	if (toggleAltitude && ofGetFrameNum() % 20 == 0)
 		altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
 
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
@@ -403,6 +405,8 @@ void ofApp::draw() {
     ofSetColor(ofColor::white);
 		//blinking text effect 
 		if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+
+
 		
 		ofNoFill();
 		ofSetColor(255, 165, 0);
@@ -414,7 +418,20 @@ void ofApp::draw() {
 
 		ofSetColor(ofColor::white);
 		subtitleFont.drawString("Crash       Landing", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 180);
-    	return; 	
+
+		if (menuList == 1) ofSetColor(114, 204, 242);
+		subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 80);
+		ofSetColor(ofColor::white);
+
+		if (menuList == 2) ofSetColor(114, 204, 242);
+		subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 100, ofGetHeight() /2);
+		ofSetColor(ofColor::white);
+
+		if (menuList == 3) ofSetColor(114, 204, 242);
+		subtitleFont.drawString("Debug    Mode", ofGetWidth() / 2 - 100, ofGetHeight() /2 + 80);
+		ofSetColor(ofColor::white);
+
+    return; 	
 	}
 	//end of Title Screen
 
@@ -492,9 +509,34 @@ void ofApp::keyPressed(int key) {
 	switch (key) {
 	case OF_KEY_RETURN:
 		if(bTitleScreen){
-			bTitleScreen = false;
-			titleFadingOut = true;
-			cam.enableMouseInput();
+			if (menuList == 1) {
+				bTitleScreen = false;
+				titleFadingOut = true;
+				cam.enableMouseInput();
+			}
+			if (menuList == 2) {
+				// Display Instructions Here
+			}
+			if (menuList == 3) {
+				// Debug Mode Here
+			}
+			menuSelect.play();
+		}
+		break;
+	case OF_KEY_DOWN:
+		if(bTitleScreen) {
+			menuList++;
+			menuScroll.play();
+			if (menuList > 3) menuList = 1;
+			if (menuList < 1) menuList = 3;
+		}
+		break;
+	case OF_KEY_UP:
+		if(bTitleScreen) {
+			menuList--;
+			menuScroll.play();
+			if (menuList > 3) menuList = 1;
+			if (menuList < 1) menuList = 3;
 		}
 		break;
 	case '1':
