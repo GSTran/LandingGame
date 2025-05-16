@@ -53,9 +53,11 @@ void ofApp::setup(){
 	menuScroll.load("sounds/menu-scroll.mp3");
 	menuSelect.load("sounds/menu-select.mp3");
 	backgroundMusic.load("sounds/background.mp3");
+	winSound.load("sounds/win.mp3");
+
+
 	backgroundMusic.setLoop(true);
 	backgroundMusic.setVolume(0.0f);
-
 	titleSong.setLoop(true);
 	titleSong.play();
 
@@ -196,6 +198,7 @@ void ofApp::loadVbo2() {
 	vbo2.setVertexData(&points[0], total, GL_STATIC_DRAW);
 	vbo2.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
+
  
 
 void ofApp::resetGame(){
@@ -348,6 +351,10 @@ void ofApp::update() {
 			bGameWin = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
+
+			if (!winSound.isPlaying()) {
+    			winSound.play();
+			}
 	}
 
 	if(bGameOver){
