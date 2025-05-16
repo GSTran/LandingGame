@@ -52,6 +52,9 @@ class ofApp : public ofBaseApp{
 		bool landed2 = false;
 		bool landed3 = false;
 		int landingCount = 0;
+		float lastLandingTime = 0.0f;
+		bool showLandingMessage = false;
+		float landingMessageDuration = 3.0f;
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
