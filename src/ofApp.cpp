@@ -53,9 +53,11 @@ void ofApp::setup(){
 	menuScroll.load("sounds/menu-scroll.mp3");
 	menuSelect.load("sounds/menu-select.mp3");
 	backgroundMusic.load("sounds/background.mp3");
+	winSound.load("sounds/win.mp3");
+
+
 	backgroundMusic.setLoop(true);
 	backgroundMusic.setVolume(0.0f);
-
 	titleSong.setLoop(true);
 	titleSong.play();
 
@@ -82,11 +84,15 @@ void ofApp::setup(){
 
 	target1.loadModel("geo/target.obj");
 	target1.setScaleNormalization(false);
-	target1.setPosition(-40, 2, -270);
+	target1.setPosition(-40, -1, -270);
 
 	target2.loadModel("geo/target.obj");
 	target2.setScaleNormalization(false);
-	target2.setPosition(300, 2, -100);
+	target2.setPosition(300, -1, -100);
+
+	spacebuilding1.loadModel("geo/spacebuilding1.obj");
+	spacebuilding1.setScaleNormalization(false);
+	spacebuilding1.setPosition(-80, 10, -320);
 
 	
 	initThreePointLighting();
@@ -103,13 +109,15 @@ void ofApp::setup(){
     std::vector<ofMesh> meshes = {
     target.getMesh(0),
     target1.getMesh(0),
-    target2.getMesh(0)
+    target2.getMesh(0),
+	spacebuilding1.getMesh(0)
 	};
 
 	std::vector<ofxAssimpModelLoader*> models = {
     &target,
     &target1,
-    &target2
+    &target2,
+	&spacebuilding1
 	};
 
     // Transform the vertices of the spacebuilding mesh to the correct position
@@ -197,6 +205,7 @@ void ofApp::loadVbo2() {
 	vbo2.setVertexData(&points[0], total, GL_STATIC_DRAW);
 	vbo2.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
+
  
 
 void ofApp::resetGame(){
@@ -317,7 +326,7 @@ void ofApp::update() {
 
 	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 
-	if (colBoxList.size() > 4 && !bGameOver) {
+	if (colBoxList.size() > 2 && !bGameOver) {
 		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
 		if (ship.velocity.length() > 5.0) {
 			shipExplode = true;
@@ -347,12 +356,15 @@ void ofApp::update() {
 
 		}
 	
-		if(landingCount == 3){
-			cout << "You win!" << endl;
+	if(landingCount == 1 && bGameWin == false){
 			bGameWin = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
-		}
+
+			if (!winSound.isPlaying()) {
+    			winSound.play();
+			}
+	}
 
 	if(bGameOver){
 		camPointer = &cam;
@@ -364,21 +376,22 @@ void ofApp::update() {
 		backgroundFadingOut = true;
 
 		if(elapsedTime > gameOverDelay){
-			
 			resetGame();
 		}
-		// return;
 	}
 
 	if(bGameWin){
+		camPointer = &cam;
+		toggleAltitude = false;
+		toggleLight = false;
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
 		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
 		backgroundFadingOut = true;
 
 		if(elapsedTime > gameOverDelay){
-			
 			resetGame();
 		}
+		return;
 	}
 
 	colBoxList.clear();
@@ -413,11 +426,11 @@ void ofApp::update() {
 
 void ofApp::checkLanding(glm::vec2 point, bool &landedFlag){
 	glm::vec2 ship2DPos = glm::vec2(ship.pos.x, ship.pos.z);
-	//&& !landedFlag
-	if( glm::distance(ship2DPos, point) < 20.0 && ship.velocity.y == 0.0 ){
+	if( glm::distance(ship2DPos, point) < 20.0 && ship.velocity.y == 0.0 && !landedFlag){
 		landedFlag = true;
 		landingCount++;
-		cout << "Landed on target " << landingCount << endl;
+		showLandingMessage = true;
+		lastLandingTime = ofGetElapsedTimef();
 	}
 }
  
@@ -433,8 +446,22 @@ void ofApp::draw() {
 	ofPopMatrix();
 
 	glDepthMask(false);
-	if (!bHide) gui.draw();
+	//if (!bHide) gui.draw();
 	glDepthMask(true);
+
+	if (showLandingMessage) {
+
+        float timeSinceLanding = ofGetElapsedTimef() - lastLandingTime;
+        if (timeSinceLanding < landingMessageDuration) {
+            ofSetColor(255, 255, 0); 
+            string message = "Landed   on  " + ofToString(landingCount) + " out  of   3   targets";
+            subtitleFont.drawString(message, ofGetWidth() / 2 - 180, 20);
+        } else {
+            showLandingMessage = false;
+        }
+    }
+
+	
 	
 	camPointer->begin();
 
@@ -444,6 +471,7 @@ void ofApp::draw() {
 	target.drawFaces();
 	target1.drawFaces();
 	target2.drawFaces();
+	spacebuilding1.drawFaces();
 	ofMesh mesh;
 
 	// Game ship draw code starts here
@@ -451,19 +479,12 @@ void ofApp::draw() {
 
 	// draw colliding boxes
 	//
-	ofSetColor(ofColor::lightGreen);
-	for (int i = 0; i < colBoxList.size(); i++) {
-		ofNoFill();
-		Octree::drawBox(colBoxList[i]);
-	}
+	// ofSetColor(ofColor::lightGreen);
+	// for (int i = 0; i < colBoxList.size(); i++) {
+	// 	ofNoFill();
+	// 	Octree::drawBox(colBoxList[i]);
+	// }
 
-	//debugging
-	//keyLight.draw();
-	//fillLight.draw();
-	//rimLight.draw();
-	//ambLight.draw();
-
-	
 
 	if(toggleLight){
 		ofPushMatrix();
@@ -493,6 +514,8 @@ void ofApp::draw() {
 
 	ofPopMatrix();
 	camPointer->end();
+
+	
 
 	
 	//draw Text for Title Screen
@@ -533,7 +556,8 @@ void ofApp::draw() {
 			float y = ofGetHeight() / 2 - 400;
 			float lineHeight = subtitleFont.getLineHeight();
 
-
+		
+		  ofSetColor(ofColor::white);
 			subtitleFont.drawString("Private   Kyuruga!", x, y);
 			y += lineHeight * 2;
 			ofSetColor(ofColor::red);
@@ -623,6 +647,9 @@ void ofApp::draw() {
 			ofSetColor(114, 204, 242);
 			subtitleFont.drawString("Return   to   Menu", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
 		}
+
+		
+
 		if (bDebugMode) {
 			float time = ofGetElapsedTimef();
 			ofSetColor(ofColor::white);
@@ -821,7 +848,7 @@ void ofApp::keyPressed(int key) {
 		}
 		break;
 	case 'o':
-		bDisplayOctree = !bDisplayOctree;
+		//bDisplayOctree = !bDisplayOctree;
 		break;
 	case 'V':
 	case 'v':

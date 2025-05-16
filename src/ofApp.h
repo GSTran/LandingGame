@@ -52,10 +52,13 @@ class ofApp : public ofBaseApp{
 		bool landed2 = false;
 		bool landed3 = false;
 		int landingCount = 0;
+		float lastLandingTime = 0.0f;
+		bool showLandingMessage = false;
+		float landingMessageDuration = 3.0f;
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
-		ofxAssimpModelLoader mars, lander, target, target1, target2;
+		ofxAssimpModelLoader mars, lander, target, target1, target2, spacebuilding1;
 		ofLight keyLight, fillLight, ambLight, rimLight, spaceLight;
 		Box boundingBox, landerBounds;
 		vector<Box> colBoxList;
@@ -92,7 +95,7 @@ class ofApp : public ofBaseApp{
 
 		//sound bools and floats
 		
-		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion, menuScroll, menuSelect;
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion, menuScroll, menuSelect, winSound;
 
 		bool titleFadingOut = false;
 		float titleSongVolume = 1.0f;
