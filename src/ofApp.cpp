@@ -213,6 +213,8 @@ void ofApp::resetGame(){
 
 	titleCamAngle = 0.0f;
 
+	fuelTimer = 120000;
+
 	titleSong.setVolume(1.0f);
 	titleSongVolume = 1.0f;
 	titleSong.play();
