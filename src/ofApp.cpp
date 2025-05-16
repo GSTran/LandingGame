@@ -59,10 +59,10 @@ void ofApp::setup(){
 
 
 	backgroundMusic.setLoop(true);
-	backgroundMusic.setVolume(0.0f);
+	backgroundMusic.setVolume(1.0f);
 	titleSong.setLoop(true);
 	titleSong.play();
-	titleSong.setVolume(0.0f);
+	titleSong.setVolume(1.0f);
 
 	titleFont.load("fonts/titleFont.otf", 60, true, true, true);
 	subtitleFont.load("fonts/subtitle.ttf", 20);
@@ -95,7 +95,7 @@ void ofApp::setup(){
 
 	spacebuilding1.loadModel("geo/spacebuilding1.obj");
 	spacebuilding1.setScaleNormalization(false);
-	spacebuilding1.setPosition(-80, 10, -320);
+	spacebuilding1.setPosition(-80, 7, -320);
 
 	
 	initThreePointLighting();
@@ -228,8 +228,8 @@ void ofApp::resetGame(){
 
 	fuelTimer = 120000;
 
-	titleSong.setVolume(0.0f);
-	titleSongVolume = 0.0f;
+	titleSong.setVolume(1.0f);
+	titleSongVolume = 1.0f;
 	titleSong.play();
 	
 
@@ -282,10 +282,10 @@ void ofApp::update() {
 	if(backgroundFadingIn){
 		backgroundMusicVolume += fadeSpeedBG;
 		if (backgroundMusicVolume >= 0.5f) {
-			backgroundMusicVolume = 0.0f;
+			backgroundMusicVolume = 0.5f;
 			backgroundFadingIn = false;
 		}
-		backgroundMusic.setVolume(0.0);
+		backgroundMusic.setVolume(backgroundMusicVolume);
 	}
 
 	if(backgroundFadingOut){
@@ -295,7 +295,7 @@ void ofApp::update() {
 			backgroundFadingOut = false;
 			backgroundMusic.stop();
 		}
-		backgroundMusic.setVolume(0.0);
+		backgroundMusic.setVolume(backgroundMusicVolume);
 	}
 
 	//end of music logic
