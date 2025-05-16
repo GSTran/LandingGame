@@ -75,17 +75,17 @@ void ofApp::setup(){
 	mars.loadModel("geo/terrain.obj");
 	mars.setScaleNormalization(false);
 
-	target.loadModel("geo/target.obj");
+	target.loadModel("geo/target1.obj");
 	target.setScaleNormalization(false);
-	target.setPosition(20, -10, 20);
+	target.setPosition(20, -5, 20);
 
-	target1.loadModel("geo/target.obj");
+	target1.loadModel("geo/target1.obj");
 	target1.setScaleNormalization(false);
-	target1.setPosition(-40, 2, -270);
+	target1.setPosition(-40, 7, -270);
 
-	target2.loadModel("geo/target.obj");
+	target2.loadModel("geo/target1.obj");
 	target2.setScaleNormalization(false);
-	target2.setPosition(300, 2, -100);
+	target2.setPosition(300, 7, -100);
 
 	
 	initThreePointLighting();
@@ -410,8 +410,7 @@ void ofApp::update() {
 
 void ofApp::checkLanding(glm::vec2 point, bool &landedFlag){
 	glm::vec2 ship2DPos = glm::vec2(ship.pos.x, ship.pos.z);
-	//&& !landedFlag
-	if( glm::distance(ship2DPos, point) < 20.0 && ship.velocity.y == 0.0 ){
+	if( glm::distance(ship2DPos, point) < 20.0 && ship.velocity.y == 0.0 && !landedFlag){
 		landedFlag = true;
 		landingCount++;
 		cout << "Landed on target " << landingCount << endl;
