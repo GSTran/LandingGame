@@ -58,7 +58,7 @@ class ofApp : public ofBaseApp{
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
-		ofxAssimpModelLoader mars, lander, target, target1, target2,spacebuilding1;
+		ofxAssimpModelLoader mars, lander, target, target1, target2, spacebuilding1;
 		ofLight keyLight, fillLight, ambLight, rimLight, spaceLight;
 		Box boundingBox, landerBounds;
 		vector<Box> colBoxList;
