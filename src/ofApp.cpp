@@ -69,15 +69,11 @@ void ofApp::setup(){
 	gameOverFont.load("fonts/subtitle.ttf", 40);
 	gameFont.load("fonts/gameFont.ttf", 15);
 	
-	fuelTimer = 120000; // 2 minutes in miliseconds
+	fuelTimer = 120000; // 2 minutes in milliseconds
 	lastTime = 0;
 
 	backgroundImage.load("images/background.jpg");
 
-	// setup rudimentary lighting 
-	//initLightingAndMaterials();
-
-	cout << "Moon Test Data: " << endl;
 	mars.loadModel("geo/terrain.obj");
 	mars.setScaleNormalization(false);
 
@@ -95,7 +91,7 @@ void ofApp::setup(){
 
 	spacebuilding1.loadModel("geo/spacebuilding1.obj");
 	spacebuilding1.setScaleNormalization(false);
-	spacebuilding1.setPosition(-80, 7, -320);
+	spacebuilding1.setPosition(-80, 7.5, -320);
 
 	
 	initThreePointLighting();
@@ -113,7 +109,7 @@ void ofApp::setup(){
     target.getMesh(0),
     target1.getMesh(0),
     target2.getMesh(0),
-	spacebuilding1.getMesh(0)
+		spacebuilding1.getMesh(0)
 	};
 
 	std::vector<ofxAssimpModelLoader*> models = {
@@ -480,7 +476,6 @@ void ofApp::draw() {
 
 	// Game ship draw code starts here
 	ship.draw();
-	drawParticles();
 
 	// draw colliding boxes
 	//
@@ -660,6 +655,8 @@ void ofApp::draw() {
     return; 	
 	}
 	//end of Title Screen
+
+	drawParticles();
 
 	if(bFadingOut){
 		ofFill();
