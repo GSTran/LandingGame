@@ -65,7 +65,7 @@ class ofApp : public ofBaseApp{
 		bool bLanderSelected = false;
 		Octree octree;
 		TreeNode selectedNode;
-		glm::vec3 mouseDownPos, mouseLastPos;
+		glm::vec3 mouseDownPos, mouseLastPos, viewPoint;
 		ofImage backgroundImage;
 		int fuelTimer, lastTime, currentTime;
 
@@ -92,6 +92,7 @@ class ofApp : public ofBaseApp{
 		float fadeDuration = 2.0f;
 		float gameOverDelay = 3.0f;
 		bool toggleAltitude = false;
+		bool bPointAtShip = true;
 
 		//sound bools and floats
 		
