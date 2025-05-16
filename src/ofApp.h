@@ -69,6 +69,7 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont titleFont;
 		ofTrueTypeFont subtitleFont;
 		ofTrueTypeFont gameOverFont;
+		ofTrueTypeFont gameFont;
 		int menuList = 1;
 
 

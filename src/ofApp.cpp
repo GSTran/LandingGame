@@ -62,6 +62,7 @@ void ofApp::setup(){
 	titleFont.load("fonts/titleFont.otf", 60, true, true, true);
 	subtitleFont.load("fonts/subtitle.ttf", 20);
 	gameOverFont.load("fonts/subtitle.ttf", 40);
+	gameFont.load("fonts/gameFont.ttf", 15);
 	
 	fuelTimer = 120000; // 2 minutes in miliseconds
 	lastTime = 0;
@@ -148,7 +149,7 @@ void ofApp::setup(){
 	initEmitters();
 
 	ship.pos = glm::vec3(0.1, 2.0, 0.1); // DO NOT CHANGE, WILL BREAK ALTITUDE CALCULATIONS
-	ship.rot = 180;
+	ship.rot = 220;
 	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(600, 800), ofRandom(-1000, 1000));
 
 	// load the shader
@@ -222,7 +223,7 @@ void ofApp::resetGame(){
 
 	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
 	ship.pos = glm::vec3(0.1, 2.0, 0.1);
-	ship.rot = 180;
+	ship.rot = 220;
 	ship.forces = glm::vec3(0.0, 0.0, 0.0);
 	ship.rotForce = 0.0;
 	emitter.sys->reset();
@@ -500,8 +501,8 @@ void ofApp::draw() {
 			float time = ofGetElapsedTimef();
 			ofSetColor(ofColor::white);
 			//blinking text effect 
-			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Confirm", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
-			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up    and    Down    to    Select", ofGetWidth() / 2 - 160, ofGetHeight() - 130);
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Confirm", ofGetWidth() / 2 - 190, ofGetHeight() - 160);
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up    and    Down    to    Select", ofGetWidth() / 2 - 235, ofGetHeight() - 130);
 
 			ofNoFill();
 			ofSetColor(255, 165, 0);
@@ -516,99 +517,105 @@ void ofApp::draw() {
 
 			// Interactive Menu Elements
 			if (menuList == 1) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 110, ofGetHeight() /2 - 80);
+			subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 80, ofGetHeight() /2 - 80);
 			ofSetColor(ofColor::white);
 
 			if (menuList == 2) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 110, ofGetHeight() /2);
+			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 75, ofGetHeight() /2);
 			ofSetColor(ofColor::white);
 
 			if (menuList == 3) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Debug    Mode", ofGetWidth() / 2 - 110, ofGetHeight() /2 + 80);
+			subtitleFont.drawString("Debug   Mode", ofGetWidth() / 2 - 82, ofGetHeight() /2 + 80);
 			ofSetColor(ofColor::white);
 		}
 		if (bDisplayInstructs) {
 			float x = ofGetWidth() / 2 - 450;
-		float y = ofGetHeight() / 2 - 220;
-		float lineHeight = subtitleFont.getLineHeight();
+			float y = ofGetHeight() / 2 - 400;
+			float lineHeight = subtitleFont.getLineHeight();
 
 
-		subtitleFont.drawString("Private   Kyuruga!", x, y);
-		y += lineHeight * 2;
-		ofSetColor(ofColor::red);
-		subtitleFont.drawString("The   time   has   come   for   cats   to   colonize   whatever   this   place   is!", x, y);
-		y += lineHeight;
+			subtitleFont.drawString("Private   Kyuruga!", x, y);
+			y += lineHeight * 2;
+			ofSetColor(ofColor::red);
+			subtitleFont.drawString("The   time   has   come   for   cats   to   colonize   whatever   this   place   is!", x, y);
+			y += lineHeight;
 
 
-		ofSetColor(ofColor::white);
-		subtitleFont.drawString("But   first   you   must   learn   how   to   use   this   ship", x, y);
-		y += lineHeight * 2;
-		string controls1 = "              To   move   the   ship   around   use   the   ";
-		subtitleFont.drawString(controls1, x, y);
-		ofSetColor(ofColor::blue);
-		subtitleFont.drawString("WASD   keys", x + subtitleFont.stringWidth(controls1), y);
-		ofSetColor(ofColor::white);
-		y += lineHeight;
-		string controls2 = "              To   rotate   the   ship   use   the   ";
-		subtitleFont.drawString(controls2, x, y);
-		ofSetColor(ofColor::blue);
-		subtitleFont.drawString("Q   and   E   keys", x + subtitleFont.stringWidth(controls2), y);
-		y += lineHeight;
-		ofSetColor(ofColor::white);
-		string controls3 = "              To   use   the   ship   thrusters   press   the   ";
-		subtitleFont.drawString(controls3, x, y);
-		ofSetColor(ofColor::blue);
-		subtitleFont.drawString("Arrow   Up   key", x + subtitleFont.stringWidth(controls3), y);
-		y += lineHeight;
+			ofSetColor(ofColor::white);
+			subtitleFont.drawString("But   first   you   must   learn   how   to   use   this   ship", x, y);
+			y += lineHeight * 2;
+			string controls1 = "              To   move   the   ship   around   use   the   ";
+			subtitleFont.drawString(controls1, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("WASD   keys", x + subtitleFont.stringWidth(controls1), y);
+			ofSetColor(ofColor::white);
+			y += lineHeight;
+			string controls2 = "              To   rotate   the   ship   use   the   ";
+			subtitleFont.drawString(controls2, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("Q   and   E   keys", x + subtitleFont.stringWidth(controls2), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls3 = "              To   use   the   ship   thrusters   press   the   ";
+			subtitleFont.drawString(controls3, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("Arrow   Up   key", x + subtitleFont.stringWidth(controls3), y);
+			y += lineHeight;
 
-		ofSetColor(ofColor::white);
-		string controls4 = "              To   show   the   altitude   and   velocity   sensors   press   the   ";
-		subtitleFont.drawString(controls4, x, y);
-		ofSetColor(ofColor::blue);
-		subtitleFont.drawString("2   key", x + subtitleFont.stringWidth(controls4), y);
-		y += lineHeight;
-		ofSetColor(ofColor::white);
-		string controls5 = "              To   change   camera   views   press   the   ";
-		subtitleFont.drawString(controls5, x, y);
-		ofSetColor(ofColor::blue);
-		subtitleFont.drawString("C   key", x + subtitleFont.stringWidth(controls5), y);
-		y += lineHeight;
-		ofSetColor(ofColor::white);
-		string controls6 = "              To   change   the   third   person   camera   position   press   the   ";
-		subtitleFont.drawString(controls6, x, y);
-		ofSetColor(ofColor::blue);
-		subtitleFont.drawString("V   key   and   click", x + subtitleFont.stringWidth(controls6), y);
-		
-		y += lineHeight * 2;
-		ofSetColor(ofColor::white);
-
-
-		string fuelText1 = "Be   careful!   We   could   only   afford ";
-		subtitleFont.drawString(fuelText1, x, y);
-
-		ofSetColor(ofColor::orange);
-		subtitleFont.drawString("2   minutes   of   fuel!", x + subtitleFont.stringWidth(fuelText1), y);
-
-
-		y += lineHeight * 2;
+			ofSetColor(ofColor::white);
+			string controls4 = "              To   activate   the   onboard   lights   press   the   ";
+			subtitleFont.drawString(controls4, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("1   key", x + subtitleFont.stringWidth(controls4), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls5 = "              To   show   the   altitude   and   velocity   sensors   press   the   ";
+			subtitleFont.drawString(controls5, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("2   key", x + subtitleFont.stringWidth(controls5), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls6 = "              To   change   camera   views   press   the   ";
+			subtitleFont.drawString(controls6, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("C   key", x + subtitleFont.stringWidth(controls6), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls7 = "              To   change   the   third   person   camera   position   press   the   ";
+			subtitleFont.drawString(controls7, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("V   key   and   click", x + subtitleFont.stringWidth(controls7), y);
+			
+			y += lineHeight * 2;
+			ofSetColor(ofColor::white);
 
 
-		ofSetColor(ofColor::white);
-		string landingText1 = "Once   you   land   in   all ";
-		subtitleFont.drawString(landingText1, x, y);
+			string fuelText1 = "Be   careful!   We   could   only   afford ";
+			subtitleFont.drawString(fuelText1, x, y);
+
+			ofSetColor(ofColor::orange);
+			subtitleFont.drawString("2   minutes   of   fuel!", x + subtitleFont.stringWidth(fuelText1), y);
 
 
-		ofSetColor(ofColor::green);  
-		subtitleFont.drawString("three   landing   zones", x + subtitleFont.stringWidth(landingText1), y);
+			y += lineHeight * 2;
 
 
-				ofSetColor(ofColor::white);
-		y += lineHeight;
-		subtitleFont.drawString("the   mission   is   complete!", x, y );
+			ofSetColor(ofColor::white);
+			string landingText1 = "Once   you   land   in   all ";
+			subtitleFont.drawString(landingText1, x, y);
 
 
-		y += lineHeight * 2;
-		subtitleFont.drawString("Commander    Felicette", x, y);
+			ofSetColor(ofColor::green);  
+			subtitleFont.drawString("three   landing   zones", x + subtitleFont.stringWidth(landingText1), y);
+
+
+					ofSetColor(ofColor::white);
+			y += lineHeight;
+			subtitleFont.drawString("the   mission   is   complete!", x, y );
+
+
+			y += lineHeight * 2;
+			subtitleFont.drawString("Commander    Felicette", x, y);
 
 
 
@@ -626,18 +633,6 @@ void ofApp::draw() {
 	}
 	//end of Title Screen
 
-	drawParticles();
-
-	if(toggleAltitude){
-		string frameRate, fuelLeft;
-		frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
-		fuelLeft += "Fuel: " + ofToString(fuelTimer / 1000) + "s";
-		ofSetColor(ofColor::white);
-		ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
-		ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
-		ofDrawBitmapString(fuelLeft, ofGetWindowWidth() - 200, 90);
-	}
-
 	if(bFadingOut){
 		ofFill();
 		ofSetColor(0, 0, 0, fadeAlpha);
@@ -648,9 +643,64 @@ void ofApp::draw() {
 		if(bGameWin) endingMessage = "Mission Complete!";
 		if(bGameOver) endingMessage = "Mission Failed!";
 		ofDrawBitmapString(endingMessage, ofGetWindowWidth()/2 - 50, ofGetHeight()/2);
-	
-		
 	}
+
+	// Ship GUI
+	if(toggleAltitude){
+		ofSetColor(ofColor::white);
+		gameFont.drawString(altitude,	ofGetWindowWidth() / 2 - gameFont.stringWidth(altitude) / 2, ofGetWindowHeight() - 30);
+	}
+
+	string fuelLeft = "Fuel: " + ofToString(fuelTimer / 1000) + "s";
+	if (fuelTimer > 30000) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(fuelLeft, ofGetWindowWidth() - gameFont.stringWidth(fuelLeft) - 30, ofGetWindowHeight() - 30);
+	} else {
+		ofSetColor(ofColor::red);
+		float time = ofGetElapsedTimef();
+		//blinking text effect 
+		if (fmod(time, 1.0) < 0.8) gameFont.drawString(fuelLeft, ofGetWindowWidth() - gameFont.stringWidth(fuelLeft) - 30, ofGetWindowHeight() - 30);
+	}
+
+	string velocity = "Velocity: " + ofToString(ship.velocity.length());
+	if (ship.velocity.length() < 5.0) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(velocity, 30, ofGetWindowHeight() - 30);
+	} else {
+		ofSetColor(ofColor::red);
+		float time = ofGetElapsedTimef();
+		//blinking text effect 
+		if (fmod(time, 1.0) < 0.9) gameFont.drawString(velocity, 30, ofGetWindowHeight() - 30);
+	}
+
+	string lights = "Light: ";
+	if (toggleLight) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(lights, 30, 30);
+		ofSetColor(ofColor::green);
+		gameFont.drawString("ON", 30 + gameFont.stringWidth(lights) + 10, 30);
+	} else {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(lights, 30, 30);
+		ofSetColor(ofColor::red);
+		gameFont.drawString("OFF", 30 + gameFont.stringWidth(lights) + 10, 30);
+	}
+
+	string camera = "Move Camera: ";
+	if (bMoveCamera) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(camera, 30, 35 + gameFont.stringHeight(lights));
+		ofSetColor(ofColor::green);
+		gameFont.drawString("ON", 30 + gameFont.stringWidth(camera) + 10, 35 + gameFont.stringHeight(lights));
+	} else {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(camera, 30, 40 + gameFont.stringHeight(lights));
+		ofSetColor(ofColor::red);
+		gameFont.drawString("OFF", 30 + gameFont.stringWidth(camera) + 10, 40 + gameFont.stringHeight(lights));
+	}
+
+	drawParticles();
+
 }
 
 void ofApp::drawParticles(){
