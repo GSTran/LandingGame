@@ -55,11 +55,14 @@ void ofApp::setup(){
 	backgroundMusic.load("sounds/background.mp3");
 	winSound.load("sounds/win.mp3");
 
+	
+
 
 	backgroundMusic.setLoop(true);
 	backgroundMusic.setVolume(0.0f);
 	titleSong.setLoop(true);
 	titleSong.play();
+	titleSong.setVolume(0.0f);
 
 	titleFont.load("fonts/titleFont.otf", 60, true, true, true);
 	subtitleFont.load("fonts/subtitle.ttf", 20);
@@ -225,8 +228,8 @@ void ofApp::resetGame(){
 
 	fuelTimer = 120000;
 
-	titleSong.setVolume(1.0f);
-	titleSongVolume = 1.0f;
+	titleSong.setVolume(0.0f);
+	titleSongVolume = 0.0f;
 	titleSong.play();
 	
 
@@ -279,10 +282,10 @@ void ofApp::update() {
 	if(backgroundFadingIn){
 		backgroundMusicVolume += fadeSpeedBG;
 		if (backgroundMusicVolume >= 0.5f) {
-			backgroundMusicVolume = 0.5f;
+			backgroundMusicVolume = 0.0f;
 			backgroundFadingIn = false;
 		}
-		backgroundMusic.setVolume(backgroundMusicVolume);
+		backgroundMusic.setVolume(0.0);
 	}
 
 	if(backgroundFadingOut){
@@ -292,7 +295,7 @@ void ofApp::update() {
 			backgroundFadingOut = false;
 			backgroundMusic.stop();
 		}
-		backgroundMusic.setVolume(backgroundMusicVolume);
+		backgroundMusic.setVolume(0.0);
 	}
 
 	//end of music logic
@@ -523,8 +526,8 @@ void ofApp::draw() {
 			float time = ofGetElapsedTimef();
 			ofSetColor(ofColor::white);
 			//blinking text effect 
-			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Confirm", ofGetWidth() / 2 - 190, ofGetHeight() - 160);
-			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up    and    Down    to    Select", ofGetWidth() / 2 - 235, ofGetHeight() - 130);
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Confirm", ofGetWidth() / 2 - 170, ofGetHeight() - 160);
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up    and    Down    to    Select", ofGetWidth() / 2 - 185, ofGetHeight() - 130);
 
 			ofNoFill();
 			ofSetColor(255, 165, 0);
@@ -543,11 +546,11 @@ void ofApp::draw() {
 			ofSetColor(ofColor::white);
 
 			if (menuList == 2) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 75, ofGetHeight() /2);
+			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 90, ofGetHeight() /2);
 			ofSetColor(ofColor::white);
 
 			if (menuList == 3) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Debug   Mode", ofGetWidth() / 2 - 82, ofGetHeight() /2 + 80);
+			subtitleFont.drawString("Debug   Mode", ofGetWidth() / 2 - 81, ofGetHeight() /2 + 80);
 			ofSetColor(ofColor::white);
 		}
 		if (bDisplayInstructs) {
