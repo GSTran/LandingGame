@@ -99,6 +99,22 @@ void ofApp::setup(){
 	spacebuilding1.setScaleNormalization(false);
 	spacebuilding1.setPosition(-80, 7.5, -320);
 
+	//top
+    spacebuilding2.loadModel("geo/spacebuilding4.obj");
+    spacebuilding2.setScaleNormalization(false);
+    spacebuilding2.setPosition(300, 15, -40);
+
+    //bottom right
+    spacebuilding3.loadModel("geo/spacebuilding3.obj");
+    spacebuilding3.setScaleNormalization(false);
+    spacebuilding3.setPosition(-220, 15, 360);
+
+    //spawn
+    spacebuilding4.loadModel("geo/spacebuilding4.obj");
+    spacebuilding4.setScaleNormalization(false);
+    spacebuilding4.setPosition(-40, 10, 40);
+
+
 	
 	initThreePointLighting();
 
@@ -115,14 +131,20 @@ void ofApp::setup(){
     target.getMesh(0),
     target1.getMesh(0),
     target2.getMesh(0),
-		spacebuilding1.getMesh(0)
+	spacebuilding1.getMesh(0),
+	spacebuilding2.getMesh(0),
+	spacebuilding3.getMesh(0),
+	spacebuilding4.getMesh(0)
 	};
 
 	std::vector<ofxAssimpModelLoader*> models = {
     &target,
     &target1,
     &target2,
-	&spacebuilding1
+	&spacebuilding1,
+	&spacebuilding2,
+	&spacebuilding3,
+	&spacebuilding4
 	};
 
     // Transform the vertices of the spacebuilding mesh to the correct position
@@ -488,6 +510,9 @@ void ofApp::draw() {
 	target1.drawFaces();
 	target2.drawFaces();
 	spacebuilding1.drawFaces();
+	spacebuilding2.drawFaces();
+	spacebuilding3.drawFaces();
+	spacebuilding4.drawFaces();
 	ofMesh mesh;
 
 	// Game ship draw code starts here
