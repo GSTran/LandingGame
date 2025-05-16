@@ -45,10 +45,20 @@ class ofApp : public ofBaseApp{
 		void initEmitters();
 		void initThreePointLighting();
 		void resetGame();
+		void checkLanding(glm::vec2 point, bool &landedFlag);
+
+
+		bool landed1 = false;
+		bool landed2 = false;
+		bool landed3 = false;
+		int landingCount = 0;
+		float lastLandingTime = 0.0f;
+		bool showLandingMessage = false;
+		float landingMessageDuration = 3.0f;
 
 		ofEasyCam cam, topCam;
 		ofCamera *camPointer;
-		ofxAssimpModelLoader mars, lander;
+		ofxAssimpModelLoader mars, lander, target, target1, target2, spacebuilding1;
 		ofLight keyLight, fillLight, ambLight, rimLight, spaceLight;
 		Box boundingBox, landerBounds;
 		vector<Box> colBoxList;
@@ -62,16 +72,22 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont titleFont;
 		ofTrueTypeFont subtitleFont;
 		ofTrueTypeFont gameOverFont;
+		ofTrueTypeFont gameFont;
+		int menuList = 1;
 
 
 		bool bInDrag = false;
 		bool toggleLight = false;
 		string altitude;
 		bool bTitleScreen = true;
+		bool bDebugMode = false;
+		bool bDisplayInstructs = false;
+
 		float titleCamAngle = 0.0f;
 		bool bFadingOut = false;
 		float fadeAlpha = 0.0f;
 		bool bGameOver = false;
+		bool bGameWin = false;
 		float fadeStartTime = 0.0f;
 		float fadeDuration = 2.0f;
 		float gameOverDelay = 3.0f;
@@ -79,7 +95,7 @@ class ofApp : public ofBaseApp{
 
 		//sound bools and floats
 		
-		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion;
+		ofSoundPlayer rocket, titleSong, backgroundMusic, gameOverSound, explosion, menuScroll, menuSelect, winSound;
 
 		bool titleFadingOut = false;
 		float titleSongVolume = 1.0f;

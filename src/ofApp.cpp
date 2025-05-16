@@ -50,16 +50,21 @@ void ofApp::setup(){
 	titleSong.load("sounds/title2.mp3");
 	gameOverSound.load("sounds/gameover.mp3");
 	explosion.load("sounds/explosion.mp3");
+	menuScroll.load("sounds/menu-scroll.mp3");
+	menuSelect.load("sounds/menu-select.mp3");
 	backgroundMusic.load("sounds/background.mp3");
+	winSound.load("sounds/win.mp3");
+
+
 	backgroundMusic.setLoop(true);
 	backgroundMusic.setVolume(0.0f);
-
 	titleSong.setLoop(true);
 	titleSong.play();
 
 	titleFont.load("fonts/titleFont.otf", 60, true, true, true);
 	subtitleFont.load("fonts/subtitle.ttf", 20);
 	gameOverFont.load("fonts/subtitle.ttf", 40);
+	gameFont.load("fonts/gameFont.ttf", 15);
 	
 	fuelTimer = 120000; // 2 minutes in miliseconds
 	lastTime = 0;
@@ -71,8 +76,23 @@ void ofApp::setup(){
 
 	cout << "Moon Test Data: " << endl;
 	mars.loadModel("geo/terrain.obj");
-
 	mars.setScaleNormalization(false);
+
+	target.loadModel("geo/target.obj");
+	target.setScaleNormalization(false);
+	target.setPosition(20, -10, 20);
+
+	target1.loadModel("geo/target.obj");
+	target1.setScaleNormalization(false);
+	target1.setPosition(-40, -1, -270);
+
+	target2.loadModel("geo/target.obj");
+	target2.setScaleNormalization(false);
+	target2.setPosition(300, -1, -100);
+
+	spacebuilding1.loadModel("geo/spacebuilding1.obj");
+	spacebuilding1.setScaleNormalization(false);
+	spacebuilding1.setPosition(-80, 10, -320);
 
 	
 	initThreePointLighting();
@@ -84,7 +104,39 @@ void ofApp::setup(){
 	bHide = false;
 
 	//  Create Octree for testing.
-	octree.create(mars.getMesh(0), 20);
+	ofMesh terrainmesh = mars.getMesh(0);
+
+    std::vector<ofMesh> meshes = {
+    target.getMesh(0),
+    target1.getMesh(0),
+    target2.getMesh(0),
+	spacebuilding1.getMesh(0)
+	};
+
+	std::vector<ofxAssimpModelLoader*> models = {
+    &target,
+    &target1,
+    &target2,
+	&spacebuilding1
+	};
+
+    // Transform the vertices of the spacebuilding mesh to the correct position
+    for (int m = 0; m < meshes.size(); ++m) {
+    ofMesh& mesh = meshes[m];  // reference so we can modify it
+    ofMatrix4x4 modelMatrix = models[m]->getModelMatrix();
+
+    for (int i = 0; i < mesh.getNumVertices(); ++i) {
+        ofVec3f v = mesh.getVertex(i);
+        ofVec3f transformed = modelMatrix.preMult(v);
+        mesh.setVertex(i, transformed);
+    }
+	terrainmesh.append(mesh);
+	}	
+
+    //terrainmesh.append(targetMesh);
+    octree.create(terrainmesh, 20);
+
+	//octree.create(mars.getMesh(0), 20);
 
 	ship.loadModel();
 
@@ -105,7 +157,7 @@ void ofApp::setup(){
 	initEmitters();
 
 	ship.pos = glm::vec3(0.1, 2.0, 0.1); // DO NOT CHANGE, WILL BREAK ALTITUDE CALCULATIONS
-	ship.rot = 180;
+	ship.rot = 220;
 	explosionForce = glm::vec3(ofRandom(-1000, 1000), ofRandom(600, 800), ofRandom(-1000, 1000));
 
 	// load the shader
@@ -153,6 +205,7 @@ void ofApp::loadVbo2() {
 	vbo2.setVertexData(&points[0], total, GL_STATIC_DRAW);
 	vbo2.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
+
  
 
 void ofApp::resetGame(){
@@ -161,8 +214,16 @@ void ofApp::resetGame(){
 	fadeAlpha = 0.0f;
 	fadeStartTime = 0.0f;
 	bGameOver = false;
+	bGameWin = false;
+
+	landingCount = 0;
+	landed1 = false;
+	landed2 = false;
+	landed3 = false;
 
 	titleCamAngle = 0.0f;
+
+	fuelTimer = 120000;
 
 	titleSong.setVolume(1.0f);
 	titleSongVolume = 1.0f;
@@ -171,7 +232,7 @@ void ofApp::resetGame(){
 
 	ship.velocity = glm::vec3(0.0, 0.0, 0.0);
 	ship.pos = glm::vec3(0.1, 2.0, 0.1);
-	ship.rot = 180;
+	ship.rot = 220;
 	ship.forces = glm::vec3(0.0, 0.0, 0.0);
 	ship.rotForce = 0.0;
 	emitter.sys->reset();
@@ -185,13 +246,19 @@ void ofApp::update() {
 	//menu screen
 	//rotate camera around the ship until the user presses enter
 	if(bTitleScreen){
-		float radius = 40.0f;
-		titleCamAngle += 0.1f;
-		float rad = glm::radians(titleCamAngle);
-		glm::vec3 camPos = ship.pos + glm::vec3(cos(rad) * radius, 10, sin(rad) * radius);
-		camPointer->setPosition(camPos);
-		camPointer->lookAt(ship.pos);
-		cam.disableMouseInput();
+		if (!bDebugMode) {
+			float radius = 40.0f;
+			titleCamAngle += 0.1f;
+			float rad = glm::radians(titleCamAngle);
+			glm::vec3 camPos = ship.pos + glm::vec3(cos(rad) * radius, 10, sin(rad) * radius);
+			camPointer->setPosition(camPos);
+			camPointer->lookAt(ship.pos);
+			cam.disableMouseInput();
+		}
+		if (bDebugMode) {
+			// cam.enableMouseInput();
+		}
+		
 		return;
 	}
 
@@ -259,7 +326,7 @@ void ofApp::update() {
 
 	ship.forces += glm::vec3(0.0, -2.0, 0.0); // Gravity Force
 
-	if (colBoxList.size() > 10 && !bGameOver) {
+	if (colBoxList.size() > 2 && !bGameOver) {
 		ship.forces += glm::vec3(0.0, 2.0, 0.0); // Impulse Force
 		if (ship.velocity.length() > 5.0) {
 			shipExplode = true;
@@ -277,7 +344,27 @@ void ofApp::update() {
 		}
 		if (!keymap[OF_KEY_UP] && !bGameOver)
 			ship.landedLogic();
+
+			glm::vec2 point1 = glm::vec2(20.0, 20.0);
+			glm::vec2 point2 = glm::vec2(-40.0, -270.0);
+			glm::vec2 point3 = glm::vec2(300.0, -100.0);
+			
+
+			checkLanding(point1, landed1);
+			checkLanding(point2, landed2);
+			checkLanding(point3, landed3);
+
 		}
+	
+	if(landingCount == 1 && bGameWin == false){
+			bGameWin = true;
+			bFadingOut = true;
+			fadeStartTime = ofGetElapsedTimef();
+
+			if (!winSound.isPlaying()) {
+    			winSound.play();
+			}
+	}
 
 	if(bGameOver){
 		camPointer = &cam;
@@ -289,17 +376,29 @@ void ofApp::update() {
 		backgroundFadingOut = true;
 
 		if(elapsedTime > gameOverDelay){
-			
 			resetGame();
 		}
-		// return;
+	}
+
+	if(bGameWin){
+		camPointer = &cam;
+		toggleAltitude = false;
+		toggleLight = false;
+		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
+		fadeAlpha = ofMap(elapsedTime, 0.0f, fadeDuration, 0.0f, 255.0f, true);
+		backgroundFadingOut = true;
+
+		if(elapsedTime > gameOverDelay){
+			resetGame();
+		}
+		return;
 	}
 
 	colBoxList.clear();
 	octree.intersect(ship.getTransformBounds(), octree.root, colBoxList);
 	ship.integrate();
 
-	if (toggleAltitude && ofGetFrameNum() % 10 == 0)
+	if (toggleAltitude && ofGetFrameNum() % 20 == 0)
 		altitude = "Altitude: " + ofToString(ship.calculateAltitude(octree));
 
 	emitter.setPosition(ship.pos - glm::vec3(0.0, 5.0, 0.0));
@@ -324,6 +423,16 @@ void ofApp::update() {
 	if (bMoveCamera) cam.disableMouseInput();
 	else cam.enableMouseInput();
 }
+
+void ofApp::checkLanding(glm::vec2 point, bool &landedFlag){
+	glm::vec2 ship2DPos = glm::vec2(ship.pos.x, ship.pos.z);
+	if( glm::distance(ship2DPos, point) < 20.0 && ship.velocity.y == 0.0 && !landedFlag){
+		landedFlag = true;
+		landingCount++;
+		showLandingMessage = true;
+		lastLandingTime = ofGetElapsedTimef();
+	}
+}
  
 //--------------------------------------------------------------
 void ofApp::draw() {
@@ -337,14 +446,32 @@ void ofApp::draw() {
 	ofPopMatrix();
 
 	glDepthMask(false);
-	// if (!bHide) gui.draw();
+	//if (!bHide) gui.draw();
 	glDepthMask(true);
+
+	if (showLandingMessage) {
+
+        float timeSinceLanding = ofGetElapsedTimef() - lastLandingTime;
+        if (timeSinceLanding < landingMessageDuration) {
+            ofSetColor(255, 255, 0); 
+            string message = "Landed   on  " + ofToString(landingCount) + " out  of   3   targets";
+            subtitleFont.drawString(message, ofGetWidth() / 2 - 180, 20);
+        } else {
+            showLandingMessage = false;
+        }
+    }
+
+	
 	
 	camPointer->begin();
 
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
 	mars.drawFaces();
+	target.drawFaces();
+	target1.drawFaces();
+	target2.drawFaces();
+	spacebuilding1.drawFaces();
 	ofMesh mesh;
 
 	// Game ship draw code starts here
@@ -358,13 +485,6 @@ void ofApp::draw() {
 	// 	Octree::drawBox(colBoxList[i]);
 	// }
 
-	//debugging
-	//keyLight.draw();
-	//fillLight.draw();
-	//rimLight.draw();
-	//ambLight.draw();
-
-	
 
 	if(toggleLight){
 		ofPushMatrix();
@@ -396,39 +516,149 @@ void ofApp::draw() {
 	camPointer->end();
 
 	
+
+	
 	//draw Text for Title Screen
 	if (bTitleScreen) {
-		
-		float time = ofGetElapsedTimef();
-    ofSetColor(ofColor::white);
-		//blinking text effect 
-		if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
-		
-		ofNoFill();
-		ofSetColor(255, 165, 0);
-		titleFont.drawStringAsShapes("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -240);
-		
-		ofFill();
-		ofSetColor(114, 204, 242);
-		titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -230);
+		if (!bDebugMode && !bDisplayInstructs) {
+			float time = ofGetElapsedTimef();
+			ofSetColor(ofColor::white);
+			//blinking text effect 
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Confirm", ofGetWidth() / 2 - 190, ofGetHeight() - 160);
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Use        Up    and    Down    to    Select", ofGetWidth() / 2 - 235, ofGetHeight() - 130);
 
-		ofSetColor(ofColor::white);
-		subtitleFont.drawString("Crash       Landing", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 180);
-    	return; 	
+			ofNoFill();
+			ofSetColor(255, 165, 0);
+			titleFont.drawStringAsShapes("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -240);
+			
+			ofFill();
+			ofSetColor(114, 204, 242);
+			titleFont.drawString("Catstronauts", ofGetWidth() / 2 - 310, ofGetHeight() / 2 -230);
+
+			ofSetColor(ofColor::white);
+			subtitleFont.drawString("Crash       Landing", ofGetWidth() / 2 - 100, ofGetHeight() /2 - 180);
+
+			// Interactive Menu Elements
+			if (menuList == 1) ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Start    Game", ofGetWidth() / 2 - 80, ofGetHeight() /2 - 80);
+			ofSetColor(ofColor::white);
+
+			if (menuList == 2) ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Instructions", ofGetWidth() / 2 - 75, ofGetHeight() /2);
+			ofSetColor(ofColor::white);
+
+			if (menuList == 3) ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Debug   Mode", ofGetWidth() / 2 - 82, ofGetHeight() /2 + 80);
+			ofSetColor(ofColor::white);
+		}
+		if (bDisplayInstructs) {
+			float x = ofGetWidth() / 2 - 450;
+			float y = ofGetHeight() / 2 - 400;
+			float lineHeight = subtitleFont.getLineHeight();
+
+		
+		  ofSetColor(ofColor::white);
+			subtitleFont.drawString("Private   Kyuruga!", x, y);
+			y += lineHeight * 2;
+			ofSetColor(ofColor::red);
+			subtitleFont.drawString("The   time   has   come   for   cats   to   colonize   whatever   this   place   is!", x, y);
+			y += lineHeight;
+
+
+			ofSetColor(ofColor::white);
+			subtitleFont.drawString("But   first   you   must   learn   how   to   use   this   ship", x, y);
+			y += lineHeight * 2;
+			string controls1 = "              To   move   the   ship   around   use   the   ";
+			subtitleFont.drawString(controls1, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("WASD   keys", x + subtitleFont.stringWidth(controls1), y);
+			ofSetColor(ofColor::white);
+			y += lineHeight;
+			string controls2 = "              To   rotate   the   ship   use   the   ";
+			subtitleFont.drawString(controls2, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("Q   and   E   keys", x + subtitleFont.stringWidth(controls2), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls3 = "              To   use   the   ship   thrusters   press   the   ";
+			subtitleFont.drawString(controls3, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("Arrow   Up   key", x + subtitleFont.stringWidth(controls3), y);
+			y += lineHeight;
+
+			ofSetColor(ofColor::white);
+			string controls4 = "              To   activate   the   onboard   lights   press   the   ";
+			subtitleFont.drawString(controls4, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("1   key", x + subtitleFont.stringWidth(controls4), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls5 = "              To   show   the   altitude   and   velocity   sensors   press   the   ";
+			subtitleFont.drawString(controls5, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("2   key", x + subtitleFont.stringWidth(controls5), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls6 = "              To   change   camera   views   press   the   ";
+			subtitleFont.drawString(controls6, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("C   key", x + subtitleFont.stringWidth(controls6), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls7 = "              To   change   the   third   person   camera   position   press   the   ";
+			subtitleFont.drawString(controls7, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("V   key   and   click", x + subtitleFont.stringWidth(controls7), y);
+			
+			y += lineHeight * 2;
+			ofSetColor(ofColor::white);
+
+
+			string fuelText1 = "Be   careful!   We   could   only   afford ";
+			subtitleFont.drawString(fuelText1, x, y);
+
+			ofSetColor(ofColor::orange);
+			subtitleFont.drawString("2   minutes   of   fuel!", x + subtitleFont.stringWidth(fuelText1), y);
+
+
+			y += lineHeight * 2;
+
+
+			ofSetColor(ofColor::white);
+			string landingText1 = "Once   you   land   in   all ";
+			subtitleFont.drawString(landingText1, x, y);
+
+
+			ofSetColor(ofColor::green);  
+			subtitleFont.drawString("three   landing   zones", x + subtitleFont.stringWidth(landingText1), y);
+
+
+					ofSetColor(ofColor::white);
+			y += lineHeight;
+			subtitleFont.drawString("the   mission   is   complete!", x, y );
+
+
+			y += lineHeight * 2;
+			subtitleFont.drawString("Commander    Felicette", x, y);
+
+
+
+
+			ofSetColor(114, 204, 242);
+			subtitleFont.drawString("Return   to   Menu", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+		}
+
+		
+
+		if (bDebugMode) {
+			float time = ofGetElapsedTimef();
+			ofSetColor(ofColor::white);
+			//blinking text effect 
+			if (fmod(time, 1.0) < 0.5)  subtitleFont.drawString("Press      Enter      to    Start", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
+		}
+    return; 	
 	}
 	//end of Title Screen
-
-	drawParticles();
-
-	if(toggleAltitude){
-		string frameRate, fuelLeft;
-		frameRate += "Frame Rate: " + ofToString(ofGetFrameRate());
-		fuelLeft += "Fuel: " + ofToString(fuelTimer / 1000) + "s";
-		ofSetColor(ofColor::white);
-		ofDrawBitmapString(frameRate,	ofGetWindowWidth() - 200, 70);
-		ofDrawBitmapString(altitude,	ofGetWindowWidth() - 200, 80);
-		ofDrawBitmapString(fuelLeft, ofGetWindowWidth() - 200, 90);
-	}
 
 	if(bFadingOut){
 		ofFill();
@@ -436,8 +666,68 @@ void ofApp::draw() {
 		ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
 		ofSetColor(255, 255, 255, fadeAlpha);
-		ofDrawBitmapString("Game Over", ofGetWidth()/2 - 50, ofGetHeight()/2);
+		string endingMessage;
+		if(bGameWin) endingMessage = "Mission Complete!";
+		if(bGameOver) endingMessage = "Mission Failed!";
+		ofDrawBitmapString(endingMessage, ofGetWindowWidth()/2 - 50, ofGetHeight()/2);
 	}
+
+	// Ship GUI
+	if(toggleAltitude){
+		ofSetColor(ofColor::white);
+		gameFont.drawString(altitude,	ofGetWindowWidth() / 2 - gameFont.stringWidth(altitude) / 2, ofGetWindowHeight() - 30);
+	}
+
+	string fuelLeft = "Fuel: " + ofToString(fuelTimer / 1000) + "s";
+	if (fuelTimer > 30000) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(fuelLeft, ofGetWindowWidth() - gameFont.stringWidth(fuelLeft) - 30, ofGetWindowHeight() - 30);
+	} else {
+		ofSetColor(ofColor::red);
+		float time = ofGetElapsedTimef();
+		//blinking text effect 
+		if (fmod(time, 1.0) < 0.8) gameFont.drawString(fuelLeft, ofGetWindowWidth() - gameFont.stringWidth(fuelLeft) - 30, ofGetWindowHeight() - 30);
+	}
+
+	string velocity = "Velocity: " + ofToString(ship.velocity.length());
+	if (ship.velocity.length() < 5.0) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(velocity, 30, ofGetWindowHeight() - 30);
+	} else {
+		ofSetColor(ofColor::red);
+		float time = ofGetElapsedTimef();
+		//blinking text effect 
+		if (fmod(time, 1.0) < 0.9) gameFont.drawString(velocity, 30, ofGetWindowHeight() - 30);
+	}
+
+	string lights = "Light: ";
+	if (toggleLight) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(lights, 30, 30);
+		ofSetColor(ofColor::green);
+		gameFont.drawString("ON", 30 + gameFont.stringWidth(lights) + 10, 30);
+	} else {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(lights, 30, 30);
+		ofSetColor(ofColor::red);
+		gameFont.drawString("OFF", 30 + gameFont.stringWidth(lights) + 10, 30);
+	}
+
+	string camera = "Move Camera: ";
+	if (bMoveCamera) {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(camera, 30, 35 + gameFont.stringHeight(lights));
+		ofSetColor(ofColor::green);
+		gameFont.drawString("ON", 30 + gameFont.stringWidth(camera) + 10, 35 + gameFont.stringHeight(lights));
+	} else {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(camera, 30, 40 + gameFont.stringHeight(lights));
+		ofSetColor(ofColor::red);
+		gameFont.drawString("OFF", 30 + gameFont.stringWidth(camera) + 10, 40 + gameFont.stringHeight(lights));
+	}
+
+	drawParticles();
+
 }
 
 void ofApp::drawParticles(){
@@ -492,9 +782,53 @@ void ofApp::keyPressed(int key) {
 	switch (key) {
 	case OF_KEY_RETURN:
 		if(bTitleScreen){
-			bTitleScreen = false;
-			titleFadingOut = true;
-			cam.enableMouseInput();
+			if (bDisplayInstructs) {
+				bDisplayInstructs = false;
+				menuSelect.play();
+				break;
+			}
+			if (bDebugMode) {
+				bTitleScreen = false;
+				bDebugMode = false;
+				menuSelect.play();
+				break;
+			}
+			if (!bDisplayInstructs && !bDebugMode) {
+				switch (menuList) {
+					case 1:
+						bTitleScreen = false;
+						titleFadingOut = true;
+						cam.enableMouseInput();
+						break;
+					case 2:
+						bDisplayInstructs = true;
+						// Display Instructions Here
+						break;
+					case 3:
+						// Debug Mode Here
+						bDebugMode = true;
+						break;
+					default:
+						break;
+				}
+				menuSelect.play();
+			}
+		}
+		break;
+	case OF_KEY_DOWN:
+		if(bTitleScreen && !bDisplayInstructs && !bDebugMode) {
+			menuList++;
+			menuScroll.play();
+			if (menuList > 3) menuList = 1;
+			if (menuList < 1) menuList = 3;
+		}
+		break;
+	case OF_KEY_UP:
+		if(bTitleScreen && !bDisplayInstructs && !bDebugMode) {
+			menuList--;
+			menuScroll.play();
+			if (menuList > 3) menuList = 1;
+			if (menuList < 1) menuList = 3;
 		}
 		break;
 	case '1':
@@ -512,6 +846,9 @@ void ofApp::keyPressed(int key) {
 			camPointer = &cam;
 			cameraSelector *= -1;
 		}
+		break;
+	case 'o':
+		//bDisplayOctree = !bDisplayOctree;
 		break;
 	case 'V':
 	case 'v':
@@ -578,10 +915,39 @@ void ofApp::mousePressed(int x, int y, int button) {
 		cam.setPosition(p + ofVec3f(0.0, 1.0, 0.0));
 	}
 
+	if (bDebugMode) {
+		glm::vec3 origin = cam.getPosition();
+		glm::vec3 mouseWorld = cam.screenToWorld(glm::vec3(mouseX, mouseY, 0));
+		glm::vec3 mouseDir = glm::normalize(mouseWorld - origin);
+
+		Box bounds = ship.getTransformBounds();
+		bool hit = bounds.intersect(Ray(Vector3(origin.x, origin.y, origin.z), Vector3(mouseDir.x, mouseDir.y, mouseDir.z)), 0, 10000);
+		if (hit) {
+			mouseDownPos = getMousePointOnPlane(ship.pos, cam.getZAxis());
+			mouseLastPos = mouseDownPos;
+			bInDrag = true;
+		}
+	}
+
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button) {
+	if (cam.getMouseInputEnabled()) return;
+
+	if (bInDrag) {
+		glm::vec3 shipPos = ship.pos;
+
+		glm::vec3 mousePos = getMousePointOnPlane(shipPos, cam.getZAxis());
+		glm::vec3 delta = mousePos - mouseLastPos;
+	
+		shipPos += delta;
+		ship.pos = glm::vec3(shipPos.x, shipPos.y, shipPos.z);
+		mouseLastPos = mousePos;
+
+		ofVec3f min = ship.model.getSceneMin() + ship.model.getPosition();
+		ofVec3f max = ship.model.getSceneMax() + ship.model.getPosition();
+	}
 
 }
 
@@ -757,4 +1123,28 @@ bool ofApp::raySelectWithOctree(ofVec3f &pointRet) {
 	}
 
 	return pointSelected;
+}
+
+glm::vec3 ofApp::getMousePointOnPlane(glm::vec3 planePt, glm::vec3 planeNorm) {
+	// Setup our rays
+	//
+	glm::vec3 origin = cam.getPosition();
+	glm::vec3 camAxis = cam.getZAxis();
+	glm::vec3 mouseWorld = cam.screenToWorld(glm::vec3(mouseX, mouseY, 0));
+	glm::vec3 mouseDir = glm::normalize(mouseWorld - origin);
+	float distance;
+
+	bool hit = glm::intersectRayPlane(origin, mouseDir, planePt, planeNorm, distance);
+
+	if (hit) {
+		// find the point of intersection on the plane using the distance 
+		// We use the parameteric line or vector representation of a line to compute
+		//
+		// p' = p + s * dir;
+		//
+		glm::vec3 intersectPoint = origin + distance * mouseDir;
+
+		return intersectPoint;
+	}
+	else return glm::vec3(0, 0, 0);
 }
