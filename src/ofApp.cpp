@@ -342,6 +342,8 @@ void ofApp::update() {
     			gameOverSound.play();
 			}
 		}
+		if (keymap[OF_KEY_UP] && ship.velocity.y < 0) ship.velocity.y = 0;
+
 		if (!keymap[OF_KEY_UP] && !bGameOver)
 			ship.landedLogic();
 
