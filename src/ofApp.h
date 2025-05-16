@@ -56,7 +56,7 @@ class ofApp : public ofBaseApp{
 		bool showLandingMessage = false;
 		float landingMessageDuration = 3.0f;
 
-		ofEasyCam cam, topCam;
+		ofEasyCam cam, topCam, aboveCam;
 		ofCamera *camPointer;
 		ofxAssimpModelLoader mars, lander, target, target1, target2, spacebuilding1;
 		ofLight keyLight, fillLight, ambLight, rimLight, spaceLight;
@@ -158,6 +158,6 @@ class ofApp : public ofBaseApp{
 		const float selectionRange = 4.0;
 
 		map<int, bool> keymap;
-		int cameraSelector = 1;
+		int cameraSelector = -1;
 
 };

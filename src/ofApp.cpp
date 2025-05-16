@@ -35,13 +35,19 @@ void ofApp::setup(){
 	cam.enableMouseInput();
 	cam.setTarget(ship.pos);
 
-	// TODO: Change to appear looking out of window when model updated
 	topCam.setDistance(10);
 	topCam.setNearClip(.1);
 	topCam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	topCam.disableMouseInput();
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
 	topCam.lookAt(ship.getCameraLookPos());
+
+	aboveCam.setDistance(10);
+	aboveCam.setNearClip(.1);
+	aboveCam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
+	aboveCam.disableMouseInput();
+	aboveCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
+	aboveCam.lookAt(ship.pos);
 
 	ofEnableSmoothing();
 	ofEnableDepthTest();
@@ -214,6 +220,8 @@ void ofApp::resetGame(){
 	fadeStartTime = 0.0f;
 	bGameOver = false;
 	bGameWin = false;
+	bMoveCamera = false;
+	bPointAtShip = true;
 
 	landingCount = 0;
 	landed1 = false;
@@ -237,6 +245,7 @@ void ofApp::resetGame(){
 	emitter.sys->reset();
 
 	camPointer = &cam;
+	cameraSelector = -1;
 }
 //--------------------------------------------------------------
 // incrementally update scene (animation)
@@ -369,6 +378,7 @@ void ofApp::update() {
 
 	if(bGameOver){
 		camPointer = &cam;
+		cameraSelector = -1;
 		toggleAltitude = false;
 		toggleLight = false;
 		ship.forces += explosionForce;
@@ -383,6 +393,7 @@ void ofApp::update() {
 
 	if(bGameWin){
 		camPointer = &cam;
+		cameraSelector = -1;
 		toggleAltitude = false;
 		toggleLight = false;
 		float elapsedTime = ofGetElapsedTimef() - fadeStartTime;
@@ -410,6 +421,9 @@ void ofApp::update() {
 
 	topCam.setPosition(ship.getCameraPos());
 	topCam.lookAt(ship.getCameraLookPos());
+
+	aboveCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
+	aboveCam.lookAt(ship.pos);
 
 	//spaceLights 
 	if(toggleLight){
@@ -548,7 +562,7 @@ void ofApp::draw() {
 			ofSetColor(ofColor::white);
 
 			if (menuList == 3) ofSetColor(114, 204, 242);
-			subtitleFont.drawString("Debug   Mode", ofGetWidth() / 2 - 81, ofGetHeight() /2 + 80);
+			subtitleFont.drawString("Diagnostics   Mode", ofGetWidth() / 2 - 116, ofGetHeight() /2 + 80);
 			ofSetColor(ofColor::white);
 		}
 		if (bDisplayInstructs) {
@@ -857,13 +871,18 @@ void ofApp::keyPressed(int key) {
 		break;
 	case 'C':
 	case 'c':
+		cameraSelector++;
+		if (cameraSelector > 1) cameraSelector = -1;
 		if (cameraSelector == 1) {
 			camPointer = &topCam;
-			cameraSelector *= -1;
-		} else {
-			camPointer = &cam;
-			cameraSelector *= -1;
+		} 
+		if (cameraSelector == 0) {
+			camPointer = &aboveCam;
 		}
+		if (cameraSelector == -1) {
+			camPointer = &cam;
+		}
+		
 		break;
 	case 'o':
 		//bDisplayOctree = !bDisplayOctree;
