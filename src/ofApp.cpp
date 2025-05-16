@@ -356,7 +356,7 @@ void ofApp::update() {
 
 		}
 	
-	if(landingCount == 1 && bGameWin == false){
+	if(landingCount == 3 && bGameWin == false){
 			bGameWin = true;
 			bFadingOut = true;
 			fadeStartTime = ofGetElapsedTimef();
@@ -450,16 +450,15 @@ void ofApp::draw() {
 	glDepthMask(true);
 
 	if (showLandingMessage) {
-
-        float timeSinceLanding = ofGetElapsedTimef() - lastLandingTime;
-        if (timeSinceLanding < landingMessageDuration) {
-            ofSetColor(255, 255, 0); 
-            string message = "Landed   on  " + ofToString(landingCount) + " out  of   3   targets";
-            subtitleFont.drawString(message, ofGetWidth() / 2 - 180, 20);
-        } else {
-            showLandingMessage = false;
-        }
-    }
+		float timeSinceLanding = ofGetElapsedTimef() - lastLandingTime;
+		if (timeSinceLanding < landingMessageDuration) {
+			ofSetColor(255, 255, 0); 
+			string message = "Landed   on  " + ofToString(landingCount) + " out  of   3   targets";
+			gameFont.drawString(message, ofGetWidth() - gameFont.stringWidth(message) - 30, 30);
+		} else {
+			showLandingMessage = false;
+		}
+	}
 
 	
 	
@@ -516,8 +515,6 @@ void ofApp::draw() {
 	camPointer->end();
 
 	
-
-	
 	//draw Text for Title Screen
 	if (bTitleScreen) {
 		if (!bDebugMode && !bDisplayInstructs) {
@@ -561,7 +558,7 @@ void ofApp::draw() {
 			subtitleFont.drawString("Private   Kyuruga!", x, y);
 			y += lineHeight * 2;
 			ofSetColor(ofColor::red);
-			subtitleFont.drawString("The   time   has   come   for   cats   to   colonize   whatever   this   place   is!", x, y);
+			subtitleFont.drawString("The   time   has   come   for   cats   to   claim   whatever   this   place   is!", x, y);
 			y += lineHeight;
 
 
