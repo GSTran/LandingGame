@@ -480,6 +480,7 @@ void ofApp::draw() {
 
 	// Game ship draw code starts here
 	ship.draw();
+	drawParticles();
 
 	// draw colliding boxes
 	//
@@ -645,11 +646,9 @@ void ofApp::draw() {
 
 
 
-
 			ofSetColor(114, 204, 242);
 			subtitleFont.drawString("Return   to   Menu", ofGetWidth() / 2 - 160, ofGetHeight() - 160);
 		}
-
 		
 
 		if (bDebugMode) {
@@ -679,6 +678,7 @@ void ofApp::draw() {
 		ofSetColor(ofColor::white);
 		gameFont.drawString(altitude,	ofGetWindowWidth() / 2 - gameFont.stringWidth(altitude) / 2, ofGetWindowHeight() - 30);
 	}
+
 
 	string fuelLeft = "Fuel: " + ofToString(fuelTimer / 1000) + "s";
 	if (fuelTimer > 30000) {
@@ -728,7 +728,6 @@ void ofApp::draw() {
 		gameFont.drawString("OFF", 30 + gameFont.stringWidth(camera) + 10, 40 + gameFont.stringHeight(lights));
 	}
 
-	drawParticles();
 
 }
 
