@@ -39,7 +39,7 @@ void ofApp::setup(){
 	topCam.setDistance(10);
 	topCam.setNearClip(.1);
 	topCam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
-	topCam.enableMouseInput();
+	topCam.disableMouseInput();
 	topCam.setPosition(ship.pos + glm::vec3(0, 20, 0));
 	topCam.lookAt(ship.getCameraLookPos());
 
@@ -407,7 +407,6 @@ void ofApp::update() {
 	explosionEmitter.setPosition(ship.pos);
 	explosionEmitter.update();
 
-	cam.setTarget(ship.pos);
 
 	topCam.setPosition(ship.getCameraPos());
 	topCam.lookAt(ship.getCameraLookPos());
@@ -420,9 +419,12 @@ void ofApp::update() {
 	}else{
 		spaceLight.disable();
 	}
+
+	if (bMoveCamera) cam.enableMouseInput();
+	else cam.disableMouseInput();
   
-	if (bMoveCamera) cam.disableMouseInput();
-	else cam.enableMouseInput();
+	if (!bPointAtShip) cam.setTarget(viewPoint);
+	else cam.setTarget(ship.pos);
 }
 
 void ofApp::checkLanding(glm::vec2 point, bool &landedFlag){
@@ -591,7 +593,7 @@ void ofApp::draw() {
 			subtitleFont.drawString("1   key", x + subtitleFont.stringWidth(controls4), y);
 			y += lineHeight;
 			ofSetColor(ofColor::white);
-			string controls5 = "              To   show   the   altitude   and   velocity   sensors   press   the   ";
+			string controls5 = "              To   show   the   altitude   sensors   press   the   ";
 			subtitleFont.drawString(controls5, x, y);
 			ofSetColor(ofColor::blue);
 			subtitleFont.drawString("2   key", x + subtitleFont.stringWidth(controls5), y);
@@ -603,16 +605,22 @@ void ofApp::draw() {
 			subtitleFont.drawString("C   key", x + subtitleFont.stringWidth(controls6), y);
 			y += lineHeight;
 			ofSetColor(ofColor::white);
-			string controls7 = "              To   change   the   third   person   camera   position   press   the   ";
+			string controls7 = "              To   toggle   camera   targets   press   the   ";
 			subtitleFont.drawString(controls7, x, y);
 			ofSetColor(ofColor::blue);
-			subtitleFont.drawString("V   key   and   click", x + subtitleFont.stringWidth(controls7), y);
+			subtitleFont.drawString("V   key", x + subtitleFont.stringWidth(controls7), y);
+			y += lineHeight;
+			ofSetColor(ofColor::white);
+			string controls8 = "              To   set   camera   targets   press   the   ";
+			subtitleFont.drawString(controls8, x, y);
+			ofSetColor(ofColor::blue);
+			subtitleFont.drawString("B   key   and   click", x + subtitleFont.stringWidth(controls8), y);
 			
 			y += lineHeight * 2;
 			ofSetColor(ofColor::white);
 
 
-			string fuelText1 = "Be   careful!   We   could   only   afford ";
+			string fuelText1 = "Be   careful!   We   could   only   afford   ";
 			subtitleFont.drawString(fuelText1, x, y);
 
 			ofSetColor(ofColor::orange);
@@ -720,11 +728,23 @@ void ofApp::draw() {
 		gameFont.drawString("ON", 30 + gameFont.stringWidth(camera) + 10, 35 + gameFont.stringHeight(lights));
 	} else {
 		ofSetColor(ofColor::white);
-		gameFont.drawString(camera, 30, 40 + gameFont.stringHeight(lights));
+		gameFont.drawString(camera, 30, 35 + gameFont.stringHeight(lights));
 		ofSetColor(ofColor::red);
-		gameFont.drawString("OFF", 30 + gameFont.stringWidth(camera) + 10, 40 + gameFont.stringHeight(lights));
+		gameFont.drawString("OFF", 30 + gameFont.stringWidth(camera) + 10, 35 + gameFont.stringHeight(lights));
 	}
 
+	string point = "Point at Ship: ";
+	if (bPointAtShip){
+		ofSetColor(ofColor::white);
+		gameFont.drawString(point, 30, 65 + gameFont.stringHeight(camera));
+		ofSetColor(ofColor::green);
+		gameFont.drawString("ON", 30 + gameFont.stringWidth(point) + 10, 65 + gameFont.stringHeight(camera));
+	} else {
+		ofSetColor(ofColor::white);
+		gameFont.drawString(point, 30, 65 + gameFont.stringHeight(camera));
+		ofSetColor(ofColor::red);
+		gameFont.drawString("OFF", 30 + gameFont.stringWidth(point) + 10, 65 + gameFont.stringHeight(camera));
+	}
 
 }
 
@@ -850,6 +870,10 @@ void ofApp::keyPressed(int key) {
 		break;
 	case 'V':
 	case 'v':
+		bPointAtShip = !bPointAtShip;
+		break;
+	case 'B':
+	case 'b':
 		bMoveCamera = !bMoveCamera;
 		break;
 	default:
@@ -907,10 +931,11 @@ void ofApp::mousePressed(int x, int y, int button) {
 	//
 	if (cam.getMouseInputEnabled()) return;
 
-	if (bMoveCamera) {
+	if (!bMoveCamera) {
 		ofVec3f p;
 		raySelectWithOctree(p);
-		cam.setPosition(p + ofVec3f(0.0, 1.0, 0.0));
+		viewPoint = p + ofVec3f(0.0, 1.0, 0.0);
+		cam.setTarget(viewPoint);
 	}
 
 	if (bDebugMode) {
