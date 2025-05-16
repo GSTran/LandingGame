@@ -410,9 +410,11 @@ void ofApp::update() {
 
 void ofApp::checkLanding(glm::vec2 point, bool &landedFlag){
 	glm::vec2 ship2DPos = glm::vec2(ship.pos.x, ship.pos.z);
-	if( glm::distance(ship2DPos, point) < 20.0f){
+	//&& !landedFlag
+	if( glm::distance(ship2DPos, point) < 20.0 && ship.velocity.y == 0.0 ){
 		landedFlag = true;
 		landingCount++;
+		cout << "Landed on target " << landingCount << endl;
 	}
 }
  
@@ -428,7 +430,7 @@ void ofApp::draw() {
 	ofPopMatrix();
 
 	glDepthMask(false);
-	// if (!bHide) gui.draw();
+	if (!bHide) gui.draw();
 	glDepthMask(true);
 	
 	camPointer->begin();
@@ -446,11 +448,11 @@ void ofApp::draw() {
 
 	// draw colliding boxes
 	//
-	// ofSetColor(ofColor::lightGreen);
-	// for (int i = 0; i < colBoxList.size(); i++) {
-	// 	ofNoFill();
-	// 	Octree::drawBox(colBoxList[i]);
-	// }
+	ofSetColor(ofColor::lightGreen);
+	for (int i = 0; i < colBoxList.size(); i++) {
+		ofNoFill();
+		Octree::drawBox(colBoxList[i]);
+	}
 
 	//debugging
 	//keyLight.draw();
@@ -765,6 +767,9 @@ void ofApp::keyPressed(int key) {
 			camPointer = &cam;
 			cameraSelector *= -1;
 		}
+		break;
+	case 'o':
+		bDisplayOctree = !bDisplayOctree;
 		break;
 	case 'V':
 	case 'v':
