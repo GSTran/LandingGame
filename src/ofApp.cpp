@@ -18,12 +18,6 @@
 // setup scene, lighting, state and load geometry
 //
 void ofApp::setup(){
-	bWireframe = false;
-	bDisplayPoints = false;
-	bAltKeyDown = false;
-	bCtrlKeyDown = false;
-	bLanderLoaded = false;
-	bTerrainSelected = true;
 //	ofSetWindowShape(1024, 768);
 
 	camPointer = &cam;
@@ -118,13 +112,6 @@ void ofApp::setup(){
 	
 	initThreePointLighting();
 
-	// create sliders for testing
-	gui.setup();
-	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
-	gui.add(bTimingInfo.setup("Timing Info", true));
-	bHide = false;
-
-	//  Create Octree for testing.
 	ofMesh terrainmesh = mars.getMesh(0);
 
     std::vector<ofMesh> meshes = {
@@ -484,8 +471,6 @@ void ofApp::draw() {
 	ofEnableDepthTest();
 	ofPopMatrix();
 
-	glDepthMask(false);
-	//if (!bHide) gui.draw();
 	glDepthMask(true);
 
 	if (showLandingMessage) {
@@ -544,14 +529,6 @@ void ofApp::draw() {
 	ofDisableLighting();
 	int level = 0;
 	//	ofNoFill();
-
-	if (bDisplayLeafNodes) {
-		octree.drawLeafNodes(octree.root);
-		cout << "num leaf: " << octree.numLeaf << endl;
-  } else if (bDisplayOctree) {
-		ofNoFill();
-		octree.draw(numLevels, 0);
-	}
 
 	ofPopMatrix();
 	camPointer->end();
@@ -907,10 +884,6 @@ void ofApp::keyPressed(int key) {
 		if (cameraSelector == -1) {
 			camPointer = &cam;
 		}
-		
-		break;
-	case 'o':
-		//bDisplayOctree = !bDisplayOctree;
 		break;
 	case 'V':
 	case 'v':
@@ -927,28 +900,9 @@ void ofApp::keyPressed(int key) {
 
 }
 
-void ofApp::toggleWireframeMode() {
-	bWireframe = !bWireframe;
-}
-
-void ofApp::toggleSelectTerrain() {
-	bTerrainSelected = !bTerrainSelected;
-}
-
-void ofApp::togglePointsDisplay() {
-	bDisplayPoints = !bDisplayPoints;
-}
-
 void ofApp::keyReleased(int key) {
 
 	switch (key) {
-	case OF_KEY_ALT:
-		cam.disableMouseInput();
-		bAltKeyDown = false;
-		break;
-	case OF_KEY_CONTROL:
-		bCtrlKeyDown = false;
-		break;
 	case OF_KEY_SHIFT:
 		break;
 	case OF_KEY_UP:
@@ -1024,14 +978,6 @@ void ofApp::mouseReleased(int x, int y, int button) {
 }
 
 
-
-// Set the camera to use the selected point as it's new target
-//  
-void ofApp::setCameraTarget() {
-
-}
-
-
 //--------------------------------------------------------------
 void ofApp::mouseEntered(int x, int y){
 
@@ -1051,46 +997,6 @@ void ofApp::windowResized(int w, int h){
 void ofApp::gotMessage(ofMessage msg){
 
 }
-
-
-
-//--------------------------------------------------------------
-// setup basic ambient lighting in GL  (for now, enable just 1 light)
-//
-void ofApp::initLightingAndMaterials() {
-
-	static float ambient[] =
-	{ .5f, .5f, .5, 1.0f };
-	static float diffuse[] =
-	{ 1.0f, 1.0f, 1.0f, 1.0f };
-
-	static float position[] =
-	{5.0, 5.0, 5.0, 0.0 };
-
-	static float lmodel_ambient[] =
-	{ 1.0f, 1.0f, 1.0f, 1.0f };
-
-	static float lmodel_twoside[] =
-	{ GL_TRUE };
-
-
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT0, GL_POSITION, position);
-
-	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT1, GL_POSITION, position);
-
-
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-	glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, lmodel_twoside);
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	// glEnable(GL_LIGHT1);
-	glShadeModel(GL_SMOOTH);
-} 
 
 void ofApp::initEmitters() {
 	emitter.setPosition(ofVec3f(0, 0, 0));
@@ -1167,10 +1073,6 @@ void ofApp::initThreePointLighting() {
 	
 }
 
-void ofApp::dragEvent(ofDragInfo dragInfo) {
-
-}
-
 bool ofApp::raySelectWithOctree(ofVec3f &pointRet) {
 	ofVec3f mouse(mouseX, mouseY);
 	ofVec3f rayPoint = cam.screenToWorld(mouse);
@@ -1182,8 +1084,6 @@ bool ofApp::raySelectWithOctree(ofVec3f &pointRet) {
 	int t1 = ofGetElapsedTimeMillis();
 	pointSelected = octree.intersect(ray, octree.root, selectedNode);
 	int t2 = ofGetElapsedTimeMillis();
-
-	if (bTimingInfo) cout << "Time for ray selection: " << t2 - t1 << endl;
 
 	if (pointSelected) {
 		pointRet = octree.mesh.getVertex(selectedNode.points[0]);

@@ -26,15 +26,9 @@ class ofApp : public ofBaseApp{
 		void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
 		void windowResized(int w, int h);
-		void dragEvent2(ofDragInfo dragInfo);
-		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		void drawAxis(ofVec3f);
 		void initLightingAndMaterials();
 		void savePicture();
-		void toggleWireframeMode();
-		void togglePointsDisplay();
-		void toggleSelectTerrain();
 		void setCameraTarget();
 		bool mouseIntersectPlane(ofVec3f planePoint, ofVec3f planeNorm, ofVec3f &point);
 		bool raySelectWithOctree(ofVec3f &pointRet);
@@ -124,8 +118,6 @@ class ofApp : public ofBaseApp{
 
 		ofTexture  particleTex, explosionTex;
 
-		
-		
 
 		// shaders
 		//
@@ -136,20 +128,9 @@ class ofApp : public ofBaseApp{
 		ofxPanel gui;
 		ofxToggle bTimingInfo;
 
-		bool bAltKeyDown;
-		bool bCtrlKeyDown;
-		bool bWireframe;
-		bool bDisplayPoints;
-		bool bPointSelected;
-		bool bHide;
 		bool pointSelected = false;
 		bool bDisplayLeafNodes = false;
-		bool bDisplayOctree = false;
-		bool bDisplayBBoxes = false;
 		
-		bool bLanderLoaded;
-		bool bTerrainSelected;
-
 		ofVec3f selectedPoint;
 		ofVec3f intersectPoint;
 
