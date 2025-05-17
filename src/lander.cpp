@@ -51,7 +51,6 @@ Box Lander::getTransformBounds() {
 }
 
 void Lander::landedLogic() {
-	velocity = glm::vec3(0.0);
 	acceleration = glm::vec3(0.0);
 	forces = glm::vec3(0.0);
 
