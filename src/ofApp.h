@@ -1,4 +1,7 @@
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 #pragma once
+
 
 #include "ofMain.h"
 #include "ofxGui.h"

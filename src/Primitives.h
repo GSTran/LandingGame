@@ -19,8 +19,8 @@
 //  Please document/comment all of your work !
 //  Have Fun !!
 //
-//  Student Name:   < Your Name goes Here >
-//  Date: <date of last version>
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 
 
 #include "ofApp.h"

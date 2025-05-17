@@ -8,6 +8,8 @@
 //  Copyright (c) by Kevin M. Smith
 //  Copying or use without permission is prohibited by law. 
 //
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 
 
 #include "Octree.h"

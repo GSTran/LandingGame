@@ -1,3 +1,5 @@
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 #include "lander.h"
 
 void Lander::integrate() {

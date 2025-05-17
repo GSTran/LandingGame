@@ -1,3 +1,5 @@
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 #include "vector3.h"
 #include "ray.h"
 #include "box.h"

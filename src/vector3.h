@@ -1,3 +1,5 @@
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 #ifndef _VECTOR3_H_
 #define _VECTOR3_H_
 

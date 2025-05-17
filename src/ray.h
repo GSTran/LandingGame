@@ -1,3 +1,5 @@
+//  Student Name:   Giovanni Tran, Angela Yang
+//  Date: 05/16/2025s
 #ifndef _RAY_H_
 #define _RAY_H_
 
